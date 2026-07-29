@@ -1,17 +1,17 @@
 package com.tapasco.characters.core.di
 
 import com.tapasco.characters.BuildConfig
+import com.tapasco.characters.data.remote.api.RickAndMortyApi
+import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.TimeUnit
 
-private const val BASE_URL = ""
+private const val BASE_URL = "https://rickandmortyapi.com/api/"
 
 val networkModule = module {
-
     single {
         HttpLoggingInterceptor().apply {
             level = if (BuildConfig.DEBUG) {
@@ -39,4 +39,7 @@ val networkModule = module {
             .build()
     }
 
+    single<RickAndMortyApi> {
+        get<Retrofit>().create(RickAndMortyApi::class.java)
+    }
 }
