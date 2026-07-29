@@ -1,14 +1,13 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.spotless)
 }
 
 android {
     namespace = "com.tapasco.characters"
     compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
+        version = release(37)
     }
 
     defaultConfig {
@@ -59,4 +58,42 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+}
+
+spotless {
+    kotlin {
+        target("src/**/*.kt")
+
+        ktlint("1.7.1").editorConfigOverride(
+            mapOf(
+                "ktlint_function_naming_ignore_when_annotated_with" to "Composable",
+            ),
+        )
+
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+
+    kotlinGradle {
+        target("*.gradle.kts", "**/*.gradle.kts")
+
+        ktlint("1.7.1")
+
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+
+    format("misc") {
+        target(
+            ".gitignore",
+            ".gitattributes",
+            "*.md",
+            "*.yml",
+            "*.yaml",
+        )
+
+        trimTrailingWhitespace()
+        leadingTabsToSpaces(4)
+        endWithNewline()
+    }
 }
