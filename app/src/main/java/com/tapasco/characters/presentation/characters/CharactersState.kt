@@ -4,7 +4,6 @@ import androidx.annotation.StringRes
 import com.tapasco.characters.R
 
 data class CharactersState(
-    val isLoading: Boolean = false,
     val searchQuery: String = "",
     val selectedStatus: CharacterStatusFilter = CharacterStatusFilter.All,
     val favoriteCharacterIds: Set<Int> = emptySet(),

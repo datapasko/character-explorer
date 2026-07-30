@@ -13,6 +13,4 @@ sealed interface CharactersEvent {
     data class OnToggleFavorite(
         val characterId: Int,
     ) : CharactersEvent
-
-    data object OnCharactersLoadingFinished : CharactersEvent
 }
