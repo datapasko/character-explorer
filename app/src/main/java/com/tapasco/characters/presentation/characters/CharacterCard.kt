@@ -1,5 +1,7 @@
 package com.tapasco.characters.presentation.characters
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,10 +26,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -41,6 +47,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.tapasco.characters.R
 import com.tapasco.characters.domain.model.Character
+import com.tapasco.characters.ui.theme.CharactersMotion
+import com.tapasco.characters.ui.theme.FavoriteMotionTokens
 import com.tapasco.characters.ui.theme.InterdimensionalGreen
 import com.tapasco.characters.ui.theme.InterdimensionalRed
 import com.tapasco.characters.ui.theme.InterdimensionalYellow
@@ -142,13 +150,55 @@ private fun FavoriteButton(
             R.string.favorite_state_not_selected
         },
     )
+    val favoriteActionDescription = stringResource(
+        if (isFavorite) {
+            R.string.remove_from_favorites
+        } else {
+            R.string.add_to_favorites
+        },
+    )
+    val toggleScale = remember { Animatable(1f) }
+    val hasFavoriteStateChanged = remember { mutableStateOf(false) }
+
+    LaunchedEffect(isFavorite) {
+        if (!hasFavoriteStateChanged.value) {
+            hasFavoriteStateChanged.value = true
+            return@LaunchedEffect
+        }
+
+        toggleScale.snapTo(
+            if (isFavorite) {
+                FavoriteMotionTokens.ADD_START_SCALE
+            } else {
+                FavoriteMotionTokens.REMOVE_START_SCALE
+            },
+        )
+        toggleScale.animateTo(
+            targetValue = if (isFavorite) {
+                FavoriteMotionTokens.ADD_PEAK_SCALE
+            } else {
+                FavoriteMotionTokens.REMOVE_PEAK_SCALE
+            },
+            animationSpec = CharactersMotion.shortTween,
+        )
+        toggleScale.animateTo(
+            targetValue = 1f,
+            animationSpec = CharactersMotion.emphasizedSpring,
+        )
+    }
 
     FilledIconToggleButton(
         checked = isFavorite,
         onCheckedChange = { onClick() },
-        modifier = modifier.semantics {
-            stateDescription = favoriteStateDescription
-        },
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = toggleScale.value
+                scaleY = toggleScale.value
+            }
+            .semantics {
+                contentDescription = favoriteActionDescription
+                stateDescription = favoriteStateDescription
+            },
         colors = IconButtonDefaults.filledIconToggleButtonColors(
             containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.88f),
             contentColor = MaterialTheme.colorScheme.onBackground,
@@ -156,20 +206,20 @@ private fun FavoriteButton(
             checkedContentColor = Color.White,
         ),
     ) {
-        Icon(
-            imageVector = if (isFavorite) {
-                Icons.Rounded.Favorite
-            } else {
-                Icons.Rounded.FavoriteBorder
-            },
-            contentDescription = stringResource(
-                if (isFavorite) {
-                    R.string.remove_from_favorites
+        Crossfade(
+            targetState = isFavorite,
+            animationSpec = CharactersMotion.quickFade,
+            label = "favorite icon",
+        ) { favorite ->
+            Icon(
+                imageVector = if (favorite) {
+                    Icons.Rounded.Favorite
                 } else {
-                    R.string.add_to_favorites
+                    Icons.Rounded.FavoriteBorder
                 },
-            ),
-        )
+                contentDescription = null,
+            )
+        }
     }
 }
 
@@ -218,7 +268,6 @@ private fun CharacterDetails(
                 shape = glassShape,
             ),
     ) {
-
         Box(
             modifier = Modifier
                 .matchParentSize()
