@@ -1,14 +1,20 @@
 package com.tapasco.characters.presentation.characters
 
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.paging.LoadState
 import androidx.paging.LoadStates
 import androidx.paging.PagingData
@@ -81,6 +87,53 @@ class CharactersScreenTest {
         }
     }
 
+    @Test
+    fun statusFilterChange_scrollsCharactersToTop() {
+        val characters = (1..12).map(::testCharacter)
+        val pagingData = flowOf(
+            PagingData.from(
+                data = characters,
+                sourceLoadStates = COMPLETED_LOAD_STATES,
+            ),
+        )
+
+        composeRule.setContent {
+            var state by remember { mutableStateOf(CharactersState()) }
+            val lazyCharacters = pagingData.collectAsLazyPagingItems()
+
+            CharactersTheme {
+                CharactersScreenContent(
+                    state = state,
+                    characters = lazyCharacters,
+                    onSearchQueryChange = {},
+                    onStatusSelected = { selectedStatus ->
+                        state = state.copy(selectedStatus = selectedStatus)
+                    },
+                    onToggleFavorite = {},
+                    onCharacterClick = {},
+                )
+            }
+        }
+
+        waitForCharacter(characters.first().name)
+
+        composeRule
+            .onNodeWithTag(CHARACTERS_LIST_TEST_TAG)
+            .performScrollToIndex(characters.lastIndex)
+
+        composeRule
+            .onNodeWithText(characters.last().name)
+            .assertIsDisplayed()
+
+        composeRule
+            .onNodeWithText(composeRule.activity.getString(R.string.status_dead))
+            .performClick()
+
+        composeRule
+            .onNodeWithText(characters.first().name)
+            .assertIsDisplayed()
+    }
+
     private fun setScreenContent(
         state: CharactersState,
         characters: List<Character>,
@@ -122,9 +175,11 @@ class CharactersScreenTest {
     }
 }
 
-private fun testCharacter() = Character(
-    id = 1,
-    name = "Rick Sanchez",
+private fun testCharacter(
+    id: Int = 1,
+) = Character(
+    id = id,
+    name = if (id == 1) "Rick Sanchez" else "Character $id",
     status = "Alive",
     species = "Human",
     type = "",

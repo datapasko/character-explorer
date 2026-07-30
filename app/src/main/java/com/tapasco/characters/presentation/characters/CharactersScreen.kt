@@ -35,6 +35,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -43,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CollectionInfo
@@ -108,6 +110,11 @@ internal fun CharactersScreenContent(
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
+
+    LaunchedEffect(state.searchQuery, state.selectedStatus) {
+        listState.scrollToItem(index = 0)
+    }
+
     val collapseThresholdPx = with(LocalDensity.current) {
         HEADER_COLLAPSE_THRESHOLD.roundToPx()
     }
@@ -313,6 +320,7 @@ private fun CharactersContent(
                     state = listState,
                     modifier = Modifier
                         .fillMaxSize()
+                        .testTag(CHARACTERS_LIST_TEST_TAG)
                         .semantics {
                             collectionInfo = CollectionInfo(
                                 rowCount = characters.itemCount,
@@ -378,6 +386,7 @@ private fun CharactersContent(
 }
 
 private val HEADER_COLLAPSE_THRESHOLD = 48.dp
+internal const val CHARACTERS_LIST_TEST_TAG = "characters_list"
 private const val APPEND_SKELETON_KEY = "append_skeleton"
 
 @Composable
