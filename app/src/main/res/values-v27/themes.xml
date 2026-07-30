@@ -9,10 +9,4 @@
         <item name="android:windowLightNavigationBar">true</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
-
-    <style name="Theme.Characters.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/brand_primary</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_rick_icon</item>
-        <item name="postSplashScreenTheme">@style/Theme.Characters</item>
-    </style>
 </resources>

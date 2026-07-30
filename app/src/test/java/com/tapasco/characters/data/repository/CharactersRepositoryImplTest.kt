@@ -8,6 +8,7 @@ import com.tapasco.characters.data.remote.dto.EpisodeDto
 import com.tapasco.characters.data.remote.dto.LocationReferenceDto
 import com.tapasco.characters.data.remote.dto.PageInfoDto
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
@@ -20,7 +21,10 @@ class CharactersRepositoryImplTest {
     fun getCharacter_mapsResponseAndForwardsId() = runTest {
         val characterDto = characterDto(id = 137)
         val api = FakeCharactersApi(characterResponse = characterDto)
-        val repository = CharactersRepositoryImpl(api = api)
+        val repository = CharactersRepositoryImpl(
+            api = api,
+            ioDispatcher = StandardTestDispatcher(testScheduler),
+        )
 
         val character = repository.getCharacter(characterDto.id).getOrThrow()
 
@@ -38,6 +42,7 @@ class CharactersRepositoryImplTest {
         val expectedException = IllegalStateException("Network error")
         val repository = CharactersRepositoryImpl(
             api = FakeCharactersApi(characterFailure = expectedException),
+            ioDispatcher = StandardTestDispatcher(testScheduler),
         )
 
         val result = repository.getCharacter(characterId = 1)
@@ -50,13 +55,14 @@ class CharactersRepositoryImplTest {
         val expectedException = CancellationException("Request cancelled")
         val repository = CharactersRepositoryImpl(
             api = FakeCharactersApi(characterFailure = expectedException),
+            ioDispatcher = StandardTestDispatcher(testScheduler),
         )
 
         try {
             repository.getCharacter(characterId = 1)
             fail("CancellationException should be rethrown")
         } catch (actualException: CancellationException) {
-            assertSame(expectedException, actualException)
+            assertEquals(expectedException.message, actualException.message)
         }
     }
 
@@ -76,7 +82,10 @@ class CharactersRepositoryImplTest {
                 ),
             ),
         )
-        val repository = CharactersRepositoryImpl(api = api)
+        val repository = CharactersRepositoryImpl(
+            api = api,
+            ioDispatcher = StandardTestDispatcher(testScheduler),
+        )
 
         val characters = repository
             .getCharacters(

@@ -15,7 +15,7 @@ import org.koin.dsl.module
 
 val dataModule = module {
     single<CharactersRepository> {
-        CharactersRepositoryImpl(api = get())
+        CharactersRepositoryImpl(api = get(), ioDispatcher = get(IoDispatcherQualifier))
     }
 
     single<EpisodesRepository> {
