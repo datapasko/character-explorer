@@ -3,6 +3,7 @@ package com.tapasco.characters.data.repository
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.tapasco.characters.core.utils.runSuspendCatching
 import com.tapasco.characters.data.mapper.toDomain
 import com.tapasco.characters.data.remote.api.RickAndMortyApi
 import com.tapasco.characters.data.remote.paging.CharactersPagingSource
@@ -35,5 +36,9 @@ class CharactersRepositoryImpl(
         },
     ).flow
 
-    override suspend fun getCharacter(characterId: Int): Character = api.getCharacter(characterId).toDomain()
+    override suspend fun getCharacter(
+        characterId: Int,
+    ): Result<Character> = runSuspendCatching {
+        api.getCharacter(characterId).toDomain()
+    }
 }

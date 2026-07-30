@@ -103,9 +103,9 @@ private class FakeCharactersRepository : CharactersRepository {
         return flowOf(PagingData.empty())
     }
 
-    override suspend fun getCharacter(characterId: Int): Character {
-        error("Not needed for CharactersViewModel tests")
-    }
+    override suspend fun getCharacter(
+        characterId: Int,
+    ): Result<Character> = error("Not needed for CharactersViewModel tests")
 }
 
 private class FakePreferencesRepository : PreferencesRepository {

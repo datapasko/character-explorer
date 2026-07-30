@@ -1,7 +1,5 @@
 package com.tapasco.characters.presentation.characters
 
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -31,8 +28,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.tapasco.characters.ui.theme.CharactersMotion
-import com.tapasco.characters.ui.theme.LoadingMotionTokens
+import com.tapasco.characters.ui.theme.rememberSkeletonAlpha
 
 @Composable
 internal fun CharacterSkeletonList(
@@ -144,19 +140,6 @@ private fun SkeletonLine(
             .clip(RoundedCornerShape(50))
             .background(color),
     )
-}
-
-@Composable
-private fun rememberSkeletonAlpha(): Float {
-    val transition = rememberInfiniteTransition(label = "characterSkeleton")
-    val alpha by transition.animateFloat(
-        initialValue = LoadingMotionTokens.SKELETON_MIN_ALPHA,
-        targetValue = LoadingMotionTokens.SKELETON_MAX_ALPHA,
-        animationSpec = CharactersMotion.skeletonPulse,
-        label = "characterSkeletonAlpha",
-    )
-
-    return alpha
 }
 
 private const val INITIAL_SKELETON_COUNT = 3
