@@ -5,10 +5,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed class Routes {
     @Serializable
-    data object Characters: Routes()
+    data object Characters : Routes()
 
     @Serializable
     data class CharacterDetail(
-        val id: Int
-    ): Routes()
+        val id: Int,
+    ) : Routes()
 }

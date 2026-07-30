@@ -49,10 +49,9 @@ import com.tapasco.characters.R
 import com.tapasco.characters.domain.model.Character
 import com.tapasco.characters.ui.theme.CharactersMotion
 import com.tapasco.characters.ui.theme.FavoriteMotionTokens
-import com.tapasco.characters.ui.theme.InterdimensionalGreen
 import com.tapasco.characters.ui.theme.InterdimensionalNeutral
 import com.tapasco.characters.ui.theme.InterdimensionalRed
-import com.tapasco.characters.ui.theme.InterdimensionalYellow
+import com.tapasco.characters.ui.theme.characterStatusColor
 
 @Composable
 internal fun CharacterCard(
@@ -229,7 +228,7 @@ private fun CharacterStatusBadge(
     status: String,
     modifier: Modifier = Modifier,
 ) {
-    val statusColor = statusColor(status)
+    val statusColor = characterStatusColor(status)
     val statusDescription = stringResource(
         R.string.character_status_description,
         status,
@@ -316,11 +315,4 @@ private fun CharacterDetails(
             )
         }
     }
-}
-
-@Composable
-private fun statusColor(status: String): Color = when (status.lowercase()) {
-    "alive" -> InterdimensionalGreen
-    "dead" -> InterdimensionalRed
-    else -> InterdimensionalYellow
 }

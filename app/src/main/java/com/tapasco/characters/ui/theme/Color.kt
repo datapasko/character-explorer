@@ -9,6 +9,12 @@ val InterdimensionalNeutral = Color(0xFF1A1A1E)
 
 val InterdimensionalRed = Color(0xFFE5484D)
 
+internal fun characterStatusColor(status: String): Color = when {
+    status.equals("alive", ignoreCase = true) -> InterdimensionalGreen
+    status.equals("dead", ignoreCase = true) -> InterdimensionalRed
+    else -> InterdimensionalYellow
+}
+
 internal val LightBackground = Color(0xFFF8F8F2)
 internal val LightSurface = Color(0xFFFFFFFF)
 internal val LightSurfaceVariant = Color(0xFFE5E7DC)
