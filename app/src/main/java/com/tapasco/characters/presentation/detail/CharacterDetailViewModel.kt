@@ -54,7 +54,7 @@ class CharacterDetailViewModel(
     }
 
     private fun onCharacterLoaded(character: Character) {
-        _state.update {  currentState ->
+        _state.update { currentState ->
             currentState.copy(
                 isLoading = false,
                 hasError = false,

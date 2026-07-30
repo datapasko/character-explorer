@@ -139,6 +139,70 @@ class CharacterDetailViewModelTest {
         )
     }
 
+    @Test
+    fun retryEpisodes_afterFailureLoadsEpisodesAgain() = runTest {
+        val character = testCharacter()
+        val episode = testEpisode()
+        val repository = FakeCharactersRepository(
+            responses = ArrayDeque(listOf(Result.success(character))),
+        )
+        val episodesRepository = FakeEpisodesRepository(
+            responses = ArrayDeque(
+                listOf(
+                    Result.failure(IllegalStateException("Network error")),
+                    Result.success(listOf(episode)),
+                ),
+            ),
+        )
+        val viewModel = createViewModel(
+            repository = repository,
+            episodesRepository = episodesRepository,
+        )
+        runCurrent()
+
+        viewModel.retryEpisodes()
+        runCurrent()
+
+        assertEquals(
+            listOf(listOf(episode.id), listOf(episode.id)),
+            episodesRepository.requestedIds,
+        )
+        assertEquals(
+            CharacterDetailState(
+                isLoading = false,
+                character = character,
+                episodes = listOf(episode),
+            ),
+            viewModel.state.value,
+        )
+    }
+
+    @Test
+    fun characterWithoutEpisodes_doesNotRequestEpisodes() = runTest {
+        val character = testCharacter().copy(episodeUrls = emptyList())
+        val repository = FakeCharactersRepository(
+            responses = ArrayDeque(listOf(Result.success(character))),
+        )
+        val episodesRepository = FakeEpisodesRepository(
+            responses = ArrayDeque(),
+        )
+        val viewModel = createViewModel(
+            repository = repository,
+            episodesRepository = episodesRepository,
+        )
+
+        runCurrent()
+
+        assertEquals(emptyList<List<Int>>(), episodesRepository.requestedIds)
+        assertEquals(
+            CharacterDetailState(
+                isLoading = false,
+                character = character,
+            ),
+            viewModel.state.value,
+        )
+    }
+
     private fun createViewModel(
         characterId: Int = 1,
         repository: FakeCharactersRepository,
