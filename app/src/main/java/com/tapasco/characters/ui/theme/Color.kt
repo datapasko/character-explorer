@@ -7,6 +7,8 @@ val InterdimensionalYellow = Color(0xFFF0E14A)
 val InterdimensionalMagenta = Color(0xFFB91D8D)
 val InterdimensionalNeutral = Color(0xFF1A1A1E)
 
+val InterdimensionalRed = Color(0xFFE5484D)
+
 internal val LightBackground = Color(0xFFF8F8F2)
 internal val LightSurface = Color(0xFFFFFFFF)
 internal val LightSurfaceVariant = Color(0xFFE5E7DC)

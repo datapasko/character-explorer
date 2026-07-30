@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">characters</string>
+    <string name="search_by_name">Search by name</string>
+    <string name="search_icon">Search icon</string>
+    <string name="status_all">All Species</string>
+    <string name="status_alive">Alive</string>
+    <string name="status_dead">Dead</string>
+    <string name="status_unknown">Unknown</string>
+    <string name="characters_empty">No characters found</string>
+    <string name="character_image_description">Portrait of %1$s</string>
+    <string name="character_directory">DIRECTORY: %1$s</string>
+    <string name="character_code">ID: C-%1$03d</string>
+    <string name="character_species_origin">%1$s • %2$s</string>
+    <string name="character_last_seen">Last Seen: %1$s</string>
+    <string name="add_to_favorites">Add to favorites</string>
+    <string name="remove_from_favorites">Remove from favorites</string>
 </resources>

@@ -33,7 +33,15 @@ class CharactersPagingSource(
         } catch (exception: IOException) {
             LoadResult.Error(exception)
         } catch (exception: HttpException) {
-            LoadResult.Error(exception)
+            if (exception.code() == HTTP_NOT_FOUND) {
+                LoadResult.Page(
+                    data = emptyList(),
+                    prevKey = null,
+                    nextKey = null,
+                )
+            } else {
+                LoadResult.Error(exception)
+            }
         }
     }
 
@@ -42,3 +50,5 @@ class CharactersPagingSource(
         anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
     }
 }
+
+private const val HTTP_NOT_FOUND = 404

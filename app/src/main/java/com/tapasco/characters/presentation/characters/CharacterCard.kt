@@ -1,0 +1,262 @@
+package com.tapasco.characters.presentation.characters
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledIconToggleButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import com.tapasco.characters.R
+import com.tapasco.characters.domain.model.Character
+import com.tapasco.characters.ui.theme.InterdimensionalGreen
+import com.tapasco.characters.ui.theme.InterdimensionalNeutral
+import com.tapasco.characters.ui.theme.InterdimensionalRed
+import com.tapasco.characters.ui.theme.InterdimensionalYellow
+
+@Composable
+internal fun CharacterCard(
+    character: Character,
+    isFavorite: Boolean,
+    onFavoriteClick: () -> Unit,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val cardShape = RoundedCornerShape(30.dp)
+
+    Card(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        shape = cardShape,
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(340.dp),
+        ) {
+            CharacterImage(
+                character = character,
+                modifier = Modifier.matchParentSize(),
+            )
+
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CharacterStatusBadge(
+                    status = character.status,
+                )
+
+                FavoriteButton(
+                    isFavorite = isFavorite,
+                    onClick = onFavoriteClick,
+                )
+            }
+
+            CharacterDetails(
+                character = character,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun CharacterImage(
+    character: Character,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.background),
+    ) {
+        AsyncImage(
+            model = character.imageUrl,
+            contentDescription = stringResource(
+                R.string.character_image_description,
+                character.name,
+            ),
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop,
+        )
+    }
+}
+
+@Composable
+private fun FavoriteButton(
+    isFavorite: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    FilledIconToggleButton(
+        checked = isFavorite,
+        onCheckedChange = { onClick() },
+        modifier = modifier,
+        colors = IconButtonDefaults.filledIconToggleButtonColors(
+            containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.88f),
+            contentColor = MaterialTheme.colorScheme.onBackground,
+            checkedContainerColor = InterdimensionalRed.copy(alpha = 0.92f),
+            checkedContentColor = Color.White,
+        ),
+    ) {
+        Icon(
+            imageVector = if (isFavorite) {
+                Icons.Rounded.Favorite
+            } else {
+                Icons.Rounded.FavoriteBorder
+            },
+            contentDescription = stringResource(
+                if (isFavorite) {
+                    R.string.remove_from_favorites
+                } else {
+                    R.string.add_to_favorites
+                },
+            ),
+        )
+    }
+}
+
+@Composable
+private fun CharacterStatusBadge(
+    status: String,
+    modifier: Modifier = Modifier,
+) {
+    val statusColor = statusColor(status)
+
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(50),
+        color = statusColor.copy(alpha = 0.2f),
+        border = BorderStroke(1.dp, statusColor.copy(alpha = 0.4f)),
+    ) {
+        Text(
+            text = status.uppercase(),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
+            color = statusColor,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+        )
+    }
+}
+
+@Composable
+private fun CharacterDetails(
+    character: Character,
+    modifier: Modifier = Modifier,
+) {
+    val glassShape = RoundedCornerShape(30.dp)
+
+    Box(
+        modifier = modifier
+            .clip(glassShape)
+            .border(
+                width = 1.dp,
+                color = Color.White.copy(alpha = 0.32f),
+                shape = glassShape,
+            ),
+    ) {
+        AsyncImage(
+            model = character.imageUrl,
+            contentDescription = null,
+            modifier = Modifier
+                .matchParentSize()
+                .scale(1.2f)
+                .blur(20.dp),
+            contentScale = ContentScale.Crop,
+        )
+
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .background(
+                    brush = SolidColor(
+                        InterdimensionalNeutral.copy(alpha = 0.3f),
+                    )
+                ),
+        )
+
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = character.name,
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+
+            Text(
+                text = stringResource(
+                    R.string.character_species_origin,
+                    character.species,
+                    character.origin.name,
+                ),
+                color = MaterialTheme.colorScheme.secondary,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+
+            Text(
+                text = stringResource(
+                    R.string.character_last_seen,
+                    character.location.name,
+                ),
+                color = MaterialTheme.colorScheme.secondary,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+@Composable
+private fun statusColor(status: String): Color = when (status.lowercase()) {
+    "alive" -> InterdimensionalGreen
+    "dead" -> InterdimensionalRed
+    else -> InterdimensionalYellow
+}
