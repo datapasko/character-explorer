@@ -50,6 +50,7 @@ import com.tapasco.characters.domain.model.Character
 import com.tapasco.characters.ui.theme.CharactersMotion
 import com.tapasco.characters.ui.theme.FavoriteMotionTokens
 import com.tapasco.characters.ui.theme.InterdimensionalGreen
+import com.tapasco.characters.ui.theme.InterdimensionalNeutral
 import com.tapasco.characters.ui.theme.InterdimensionalRed
 import com.tapasco.characters.ui.theme.InterdimensionalYellow
 
@@ -272,7 +273,7 @@ private fun CharacterDetails(
             modifier = Modifier
                 .matchParentSize()
                 .background(
-                    MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
+                    InterdimensionalNeutral.copy(alpha = 0.6f),
                 ),
         )
 

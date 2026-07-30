@@ -5,11 +5,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -25,21 +21,14 @@ fun AppNavigation(
     onDarkThemeChange: (Boolean) -> Unit,
     navController: NavHostController = rememberNavController(),
 ) {
-    val currentBackStackEntry = navController.currentBackStackEntryAsState().value
-    val canNavigateBack = navController.previousBackStackEntry != null
-
-    val isDetailScreen =
-        currentBackStackEntry
-            ?.destination
-            ?.hasRoute<Routes.CharacterDetail>() == true
-
-    var detailSubtitle by remember { mutableStateOf("Characters") }
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val canNavigateBack =
+        currentBackStackEntry != null && navController.previousBackStackEntry != null
 
     Scaffold(
         topBar = {
             AppTopBar(
                 canNavigateBack = canNavigateBack,
-                subtitle = if (isDetailScreen) detailSubtitle else "Characters",
                 isDarkTheme = isDarkTheme,
                 onDarkThemeChange = onDarkThemeChange,
                 onBack = {
