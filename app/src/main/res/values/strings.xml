@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">characters</string>
+    <string name="app_name">MortyVerse</string>
     <string name="app_banner_content_description">Rick and Morty</string>
-    <string name="characters_screen_title">Explore the Multiverse</string>
+    <string name="characters_screen_title">Explore the MortyVerse</string>
     <string name="characters_screen_description">Search and filter characters from across dimensions.</string>
     <string name="search_by_name">Search by name</string>
     <string name="search_icon">Search icon</string>
