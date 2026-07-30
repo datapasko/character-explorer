@@ -1,11 +1,11 @@
 package com.tapasco.characters.presentation.characters
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -16,8 +16,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -28,7 +28,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -41,16 +40,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CollectionInfo
 import androidx.compose.ui.semantics.CollectionItemInfo
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.collectionInfo
 import androidx.compose.ui.semantics.collectionItemInfo
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.heading
@@ -258,12 +258,9 @@ private fun CharactersContent(
     Box(modifier = modifier.fillMaxSize()) {
         when (characters.loadState.refresh) {
             is LoadState.Loading -> {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .semantics {
-                            contentDescription = loadingCharactersDescription
-                        },
+                CharacterSkeletonList(
+                    contentDescription = loadingCharactersDescription,
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
 
@@ -324,19 +321,13 @@ private fun CharactersContent(
 
                     when (characters.loadState.append) {
                         is LoadState.Loading -> {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.semantics {
-                                            contentDescription = loadingMoreDescription
-                                        },
-                                    )
-                                }
+                            item(key = APPEND_SKELETON_KEY) {
+                                CharacterCardSkeleton(
+                                    modifier = Modifier.clearAndSetSemantics {
+                                        contentDescription = loadingMoreDescription
+                                        liveRegion = LiveRegionMode.Polite
+                                    },
+                                )
                             }
                         }
 
@@ -360,7 +351,9 @@ private fun CharactersContent(
         }
     }
 }
+
 private val HEADER_COLLAPSE_THRESHOLD = 48.dp
+private const val APPEND_SKELETON_KEY = "append_skeleton"
 
 @Composable
 private fun ErrorContent(
@@ -379,10 +372,20 @@ private fun ErrorContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        Image(
+            painter = painterResource(R.drawable.nave_rick),
+            contentDescription = null,
+            modifier = Modifier
+                .width(280.dp)
+                .height(170.dp),
+            contentScale = ContentScale.Crop,
+        )
+
         Text(
             text = errorMessage,
             style = MaterialTheme.typography.bodyLarge,
         )
+
         Button(onClick = onRetry) {
             Text(text = stringResource(R.string.retry))
         }
