@@ -12,7 +12,7 @@
 
     <style name="Theme.Characters.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/brand_primary</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/logo</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_rick_icon</item>
         <item name="postSplashScreenTheme">@style/Theme.Characters</item>
     </style>
 </resources>
