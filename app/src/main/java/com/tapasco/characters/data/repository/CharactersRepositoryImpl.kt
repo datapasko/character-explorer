@@ -9,13 +9,16 @@ import com.tapasco.characters.data.remote.api.RickAndMortyApi
 import com.tapasco.characters.data.remote.paging.CharactersPagingSource
 import com.tapasco.characters.domain.model.Character
 import com.tapasco.characters.domain.repository.CharactersRepository
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
 private const val PAGE_SIZE = 20
 private const val PREFETCH_ITEMS = 5
 
 class CharactersRepositoryImpl(
     private val api: RickAndMortyApi,
+    private val ioDispatcher: CoroutineDispatcher,
 ) : CharactersRepository {
     override fun getCharacters(
         name: String?,
@@ -38,7 +41,9 @@ class CharactersRepositoryImpl(
 
     override suspend fun getCharacter(
         characterId: Int,
-    ): Result<Character> = runSuspendCatching {
-        api.getCharacter(characterId).toDomain()
+    ): Result<Character> = withContext(ioDispatcher) {
+        runSuspendCatching {
+            api.getCharacter(characterId).toDomain()
+        }
     }
 }
