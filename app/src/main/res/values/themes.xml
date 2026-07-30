@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Characters" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Characters" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:colorAccent">@color/brand_primary</item>
+        <item name="android:navigationBarColor">@color/theme_background</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@color/theme_background</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="Theme.Characters.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/brand_primary</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_rick_icon</item>
+        <item name="postSplashScreenTheme">@style/Theme.Characters</item>
+    </style>
 </resources>
