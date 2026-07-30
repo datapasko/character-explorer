@@ -35,6 +35,9 @@
     <string name="character_episodes_load_error">Unable to load episode information.</string>
     <string name="character_episodes_empty">No episode information available.</string>
     <string name="retry_episodes">Retry episodes</string>
+    <string name="share_character">Share %1$s</string>
+    <string name="share_character_chooser_title">Share character</string>
+    <string name="share_character_text">Meet %1$s from Rick and Morty!\nStatus: %2$s\nSpecies: %3$s\n%4$s</string>
     <string name="add_to_favorites">Add to favorites</string>
     <string name="remove_from_favorites">Remove from favorites</string>
     <string name="favorite_state_selected">Favorite</string>

@@ -1,5 +1,7 @@
 package com.tapasco.characters.presentation.detail
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,9 +15,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -23,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CollectionInfo
 import androidx.compose.ui.semantics.CollectionItemInfo
@@ -53,11 +61,18 @@ fun CharacterDetailScreen(
     ),
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     CharacterDetailContent(
         uiState = uiState,
         onRetry = viewModel::retry,
         onRetryEpisodes = viewModel::retryEpisodes,
+        onShareCharacter = { character ->
+            shareCharacter(
+                context = context,
+                character = character,
+            )
+        },
         modifier = modifier,
     )
 }
@@ -67,6 +82,7 @@ internal fun CharacterDetailContent(
     uiState: CharacterDetailState,
     onRetry: () -> Unit,
     onRetryEpisodes: () -> Unit,
+    onShareCharacter: (Character) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when {
@@ -83,6 +99,7 @@ internal fun CharacterDetailContent(
             isEpisodesLoading = uiState.isEpisodesLoading,
             hasEpisodesError = uiState.hasEpisodesError,
             onRetryEpisodes = onRetryEpisodes,
+            onShareCharacter = onShareCharacter,
             modifier = modifier,
         )
 
@@ -100,6 +117,7 @@ private fun CharacterDetailSuccess(
     isEpisodesLoading: Boolean,
     hasEpisodesError: Boolean,
     onRetryEpisodes: () -> Unit,
+    onShareCharacter: (Character) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -117,28 +135,55 @@ private fun CharacterDetailSuccess(
         }
 
         item(key = "identity") {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = character.name,
-                    modifier = Modifier.semantics { heading() },
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                    textAlign = TextAlign.Center,
-                )
-                Text(
-                    text = stringResource(
-                        R.string.character_species_gender,
-                        character.species,
-                        character.gender,
-                    ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                )
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 56.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text = character.name,
+                        modifier = Modifier.semantics { heading() },
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        textAlign = TextAlign.Center,
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.character_species_gender,
+                            character.species,
+                            character.gender,
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+
+                Surface(
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.92f),
+                    tonalElevation = 4.dp,
+                    shadowElevation = 4.dp,
+                ) {
+                    IconButton(
+                        onClick = {
+                            onShareCharacter(character)
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Share,
+                            contentDescription = stringResource(
+                                R.string.share_character,
+                                character.name,
+                            ),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                }
             }
         }
 
@@ -391,4 +436,31 @@ private fun CharacterDetailError(
             Text(text = stringResource(R.string.retry))
         }
     }
+}
+
+private fun shareCharacter(
+    context: Context,
+    character: Character,
+) {
+    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TITLE, character.name)
+        putExtra(
+            Intent.EXTRA_TEXT,
+            context.getString(
+                R.string.share_character_text,
+                character.name,
+                character.status,
+                character.species,
+                character.imageUrl,
+            ),
+        )
+    }
+
+    context.startActivity(
+        Intent.createChooser(
+            shareIntent,
+            context.getString(R.string.share_character_chooser_title),
+        ),
+    )
 }
