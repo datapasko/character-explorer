@@ -79,6 +79,34 @@ fun CharactersScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val characters = viewModel.characters.collectAsLazyPagingItems()
+
+    CharactersScreenContent(
+        state = state,
+        characters = characters,
+        onSearchQueryChange = { query ->
+            viewModel.onEvent(CharactersEvent.OnSearchQueryChange(query))
+        },
+        onStatusSelected = { status ->
+            viewModel.onEvent(CharactersEvent.OnStatusFilterChange(status))
+        },
+        onToggleFavorite = { characterId ->
+            viewModel.onEvent(CharactersEvent.OnToggleFavorite(characterId))
+        },
+        onCharacterClick = onCharacterClick,
+        modifier = modifier,
+    )
+}
+
+@Composable
+internal fun CharactersScreenContent(
+    state: CharactersState,
+    characters: LazyPagingItems<Character>,
+    onSearchQueryChange: (String) -> Unit,
+    onStatusSelected: (CharacterStatusFilter) -> Unit,
+    onToggleFavorite: (characterId: Int) -> Unit,
+    onCharacterClick: (id: Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val listState = rememberLazyListState()
     val collapseThresholdPx = with(LocalDensity.current) {
         HEADER_COLLAPSE_THRESHOLD.roundToPx()
@@ -98,20 +126,14 @@ fun CharactersScreen(
             searchQuery = state.searchQuery,
             selectedStatus = state.selectedStatus,
             isCollapsed = isHeaderCollapsed,
-            onSearchQueryChange = { query ->
-                viewModel.onEvent(CharactersEvent.OnSearchQueryChange(query))
-            },
-            onStatusSelected = { status ->
-                viewModel.onEvent(CharactersEvent.OnStatusFilterChange(status))
-            },
+            onSearchQueryChange = onSearchQueryChange,
+            onStatusSelected = onStatusSelected,
         )
         CharactersContent(
             characters = characters,
             listState = listState,
             favoriteCharacterIds = state.favoriteCharacterIds,
-            onToggleFavorite = { characterId ->
-                viewModel.onEvent(CharactersEvent.OnToggleFavorite(characterId))
-            },
+            onToggleFavorite = onToggleFavorite,
             onCharacterClick = onCharacterClick,
             modifier = Modifier.weight(1f),
         )
