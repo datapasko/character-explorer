@@ -27,18 +27,6 @@ MortyVerse is an Android character explorer built as a technical assessment. It 
 - Character sharing through the Android Sharesheet.
 - Accessibility semantics for headings, collections, actions, state descriptions, loading announcements, and errors.
 
-## Assignment adaptation
-
-| Original requirement | MortyVerse implementation |
-| --- | --- |
-| Marvel characters | Rick and Morty characters |
-| Comics | Episode appearances |
-| Character list pagination | Paging 3 with 20-item pages and a prefetch distance of 5 |
-| Filter by name | Debounced server-side name filter |
-| Character description | Status, species, gender, origin, and last known location |
-| Comic name, image, and date | Episode code, name, and air date |
-
-The Rick and Morty episode endpoint does not provide episode artwork, and its character model does not include an editorial description. The UI therefore presents the closest API-backed information instead of using invented or unrelated data.
 
 ## Architecture
 
