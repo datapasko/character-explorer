@@ -32,6 +32,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CollectionInfo
+import androidx.compose.ui.semantics.CollectionItemInfo
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.collectionInfo
+import androidx.compose.ui.semantics.collectionItemInfo
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -92,7 +103,7 @@ private fun CharacterFiltersHeader(
         modifier = modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 20.dp),
     ) {
         OutlinedTextField(
             value = searchQuery,
@@ -105,7 +116,7 @@ private fun CharacterFiltersHeader(
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Rounded.Search,
-                    contentDescription = stringResource(R.string.search_icon),
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             },
@@ -118,10 +129,22 @@ private fun CharacterFiltersHeader(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        Text(
+            text = stringResource(R.string.status_filter_subtitle),
+            modifier = Modifier.semantics { heading() },
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.titleSmall,
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
+                .horizontalScroll(rememberScrollState())
+                .semantics {
+                    isTraversalGroup = true
+                },
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             CharacterStatusFilter.entries.forEach { status ->
@@ -156,11 +179,19 @@ private fun CharactersContent(
     onCharacterClick: (id: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val loadingCharactersDescription = stringResource(R.string.characters_loading)
+    val loadingMoreDescription = stringResource(R.string.characters_loading_more)
 
     Box(modifier = modifier.fillMaxSize()) {
         when (characters.loadState.refresh) {
             is LoadState.Loading -> {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .semantics {
+                            contentDescription = loadingCharactersDescription
+                        },
+                )
             }
 
             is LoadState.Error if characters.itemCount == 0 -> {
@@ -174,13 +205,24 @@ private fun CharactersContent(
                 Text(
                     text = stringResource(R.string.characters_empty),
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.align(Alignment.Center),
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .semantics {
+                            liveRegion = LiveRegionMode.Polite
+                        },
                 )
             }
 
             else -> {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .semantics {
+                            collectionInfo = CollectionInfo(
+                                rowCount = characters.itemCount,
+                                columnCount = 1,
+                            )
+                        },
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
@@ -194,6 +236,14 @@ private fun CharactersContent(
                                 isFavorite = character.id in favoriteCharacterIds,
                                 onFavoriteClick = { onToggleFavorite(character.id) },
                                 onClick = { onCharacterClick(character.id) },
+                                modifier = Modifier.semantics {
+                                    collectionItemInfo = CollectionItemInfo(
+                                        rowIndex = index,
+                                        rowSpan = 1,
+                                        columnIndex = 0,
+                                        columnSpan = 1,
+                                    )
+                                },
                             )
                         }
                     }
@@ -207,7 +257,11 @@ private fun CharactersContent(
                                         .padding(16.dp),
                                     contentAlignment = Alignment.Center,
                                 ) {
-                                    CircularProgressIndicator()
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.semantics {
+                                            contentDescription = loadingMoreDescription
+                                        },
+                                    )
                                 }
                             }
                         }
@@ -220,7 +274,7 @@ private fun CharactersContent(
                                         .fillMaxWidth()
                                         .padding(16.dp),
                                 ) {
-                                    Text(text = "Reintentar")
+                                    Text(text = stringResource(R.string.retry))
                                 }
                             }
                         }
@@ -238,17 +292,24 @@ private fun ErrorContent(
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val errorMessage = stringResource(R.string.characters_load_error)
+
     Column(
-        modifier = modifier.padding(24.dp),
+        modifier = modifier
+            .padding(24.dp)
+            .semantics {
+                liveRegion = LiveRegionMode.Polite
+                error(errorMessage)
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = "No se pudieron cargar los personajes",
+            text = errorMessage,
             style = MaterialTheme.typography.bodyLarge,
         )
         Button(onClick = onRetry) {
-            Text(text = "Reintentar")
+            Text(text = stringResource(R.string.retry))
         }
     }
 }

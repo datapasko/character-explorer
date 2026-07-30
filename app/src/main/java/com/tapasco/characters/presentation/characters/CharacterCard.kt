@@ -26,13 +26,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -40,7 +42,6 @@ import coil3.compose.AsyncImage
 import com.tapasco.characters.R
 import com.tapasco.characters.domain.model.Character
 import com.tapasco.characters.ui.theme.InterdimensionalGreen
-import com.tapasco.characters.ui.theme.InterdimensionalNeutral
 import com.tapasco.characters.ui.theme.InterdimensionalRed
 import com.tapasco.characters.ui.theme.InterdimensionalYellow
 
@@ -53,10 +54,21 @@ internal fun CharacterCard(
     modifier: Modifier = Modifier,
 ) {
     val cardShape = RoundedCornerShape(30.dp)
+    val openDetailsLabel = stringResource(
+        R.string.open_character_details,
+        character.name,
+    )
 
     Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics {
+                onClick(
+                    label = openDetailsLabel,
+                    action = null,
+                )
+            },
         shape = cardShape,
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
     ) {
@@ -110,10 +122,7 @@ private fun CharacterImage(
     ) {
         AsyncImage(
             model = character.imageUrl,
-            contentDescription = stringResource(
-                R.string.character_image_description,
-                character.name,
-            ),
+            contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
         )
@@ -126,10 +135,20 @@ private fun FavoriteButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val favoriteStateDescription = stringResource(
+        if (isFavorite) {
+            R.string.favorite_state_selected
+        } else {
+            R.string.favorite_state_not_selected
+        },
+    )
+
     FilledIconToggleButton(
         checked = isFavorite,
         onCheckedChange = { onClick() },
-        modifier = modifier,
+        modifier = modifier.semantics {
+            stateDescription = favoriteStateDescription
+        },
         colors = IconButtonDefaults.filledIconToggleButtonColors(
             containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.88f),
             contentColor = MaterialTheme.colorScheme.onBackground,
@@ -160,9 +179,15 @@ private fun CharacterStatusBadge(
     modifier: Modifier = Modifier,
 ) {
     val statusColor = statusColor(status)
+    val statusDescription = stringResource(
+        R.string.character_status_description,
+        status,
+    )
 
     Surface(
-        modifier = modifier,
+        modifier = modifier.clearAndSetSemantics {
+            contentDescription = statusDescription
+        },
         shape = RoundedCornerShape(50),
         color = statusColor.copy(alpha = 0.2f),
         border = BorderStroke(1.dp, statusColor.copy(alpha = 0.4f)),
@@ -193,23 +218,12 @@ private fun CharacterDetails(
                 shape = glassShape,
             ),
     ) {
-        AsyncImage(
-            model = character.imageUrl,
-            contentDescription = null,
-            modifier = Modifier
-                .matchParentSize()
-                .scale(1.2f)
-                .blur(20.dp),
-            contentScale = ContentScale.Crop,
-        )
 
         Box(
             modifier = Modifier
                 .matchParentSize()
                 .background(
-                    brush = SolidColor(
-                        InterdimensionalNeutral.copy(alpha = 0.3f),
-                    )
+                    MaterialTheme.colorScheme.surface.copy(alpha = 0.6f),
                 ),
         )
 
