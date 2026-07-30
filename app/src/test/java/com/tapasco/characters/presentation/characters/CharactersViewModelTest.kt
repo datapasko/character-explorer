@@ -19,6 +19,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CharactersViewModelTest {
@@ -67,16 +68,16 @@ class CharactersViewModelTest {
         assertEquals(CharacterRequest(name = null, status = null), charactersRepository.requests.single())
 
         viewModel.onEvent(CharactersEvent.OnSearchQueryChange("  Rick  "))
-        advanceTimeBy(SEARCH_DEBOUNCE_TEST_MILLIS - 1)
+        advanceTimeBy((SEARCH_DEBOUNCE_TEST_MILLIS - 1).milliseconds)
         runCurrent()
         assertEquals(1, charactersRepository.requests.size)
 
-        advanceTimeBy(1)
+        advanceTimeBy(1.milliseconds)
         runCurrent()
         assertEquals(CharacterRequest(name = "Rick", status = null), charactersRepository.requests.last())
 
         viewModel.onEvent(CharactersEvent.OnStatusFilterChange(CharacterStatusFilter.Dead))
-        advanceTimeBy(SEARCH_DEBOUNCE_TEST_MILLIS)
+        advanceTimeBy(SEARCH_DEBOUNCE_TEST_MILLIS.milliseconds)
         runCurrent()
 
         assertEquals(CharacterRequest(name = "Rick", status = "dead"), charactersRepository.requests.last())

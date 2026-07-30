@@ -278,22 +278,25 @@ private fun CharactersContent(
     val loadingMoreDescription = stringResource(R.string.characters_loading_more)
 
     Box(modifier = modifier.fillMaxSize()) {
-        when (characters.loadState.refresh) {
-            is LoadState.Loading -> {
+        when {
+            characters.loadState.refresh is LoadState.Loading &&
+                characters.itemCount == 0 -> {
                 CharacterSkeletonList(
                     contentDescription = loadingCharactersDescription,
                     modifier = Modifier.fillMaxSize(),
                 )
             }
 
-            is LoadState.Error if characters.itemCount == 0 -> {
+            characters.loadState.refresh is LoadState.Error &&
+                characters.itemCount == 0 -> {
                 ErrorContent(
                     onRetry = characters::retry,
                     modifier = Modifier.align(Alignment.Center),
                 )
             }
 
-            is LoadState.NotLoading if characters.itemCount == 0 -> {
+            characters.loadState.refresh is LoadState.NotLoading &&
+                characters.itemCount == 0 -> {
                 Text(
                     text = stringResource(R.string.characters_empty),
                     style = MaterialTheme.typography.bodyLarge,

@@ -9,6 +9,8 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.paging.LoadState
+import androidx.paging.LoadStates
 import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.tapasco.characters.R
@@ -87,7 +89,12 @@ class CharactersScreenTest {
         onToggleFavorite: (Int) -> Unit = {},
         onCharacterClick: (Int) -> Unit = {},
     ) {
-        val pagingData = flowOf(PagingData.from(characters))
+        val pagingData = flowOf(
+            PagingData.from(
+                data = characters,
+                sourceLoadStates = COMPLETED_LOAD_STATES,
+            ),
+        )
 
         composeRule.setContent {
             val lazyCharacters = pagingData.collectAsLazyPagingItems()
@@ -130,3 +137,9 @@ private fun testCharacter() = Character(
 )
 
 private const val UI_TEST_TIMEOUT_MILLIS = 5_000L
+
+private val COMPLETED_LOAD_STATES = LoadStates(
+    refresh = LoadState.NotLoading(endOfPaginationReached = true),
+    prepend = LoadState.NotLoading(endOfPaginationReached = true),
+    append = LoadState.NotLoading(endOfPaginationReached = true),
+)
