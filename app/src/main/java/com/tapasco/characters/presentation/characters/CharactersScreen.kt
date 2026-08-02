@@ -11,6 +11,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,7 +36,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -111,10 +111,6 @@ internal fun CharactersScreenContent(
 ) {
     val listState = rememberLazyListState()
 
-    LaunchedEffect(state.searchQuery, state.selectedStatus) {
-        listState.scrollToItem(index = 0)
-    }
-
     val collapseThresholdPx = with(LocalDensity.current) {
         HEADER_COLLAPSE_THRESHOLD.roundToPx()
     }
@@ -133,8 +129,18 @@ internal fun CharactersScreenContent(
             searchQuery = state.searchQuery,
             selectedStatus = state.selectedStatus,
             isCollapsed = isHeaderCollapsed,
-            onSearchQueryChange = onSearchQueryChange,
-            onStatusSelected = onStatusSelected,
+            onSearchQueryChange = { query ->
+                if (query != state.searchQuery) {
+                    listState.requestScrollToItem(index = 0)
+                }
+                onSearchQueryChange(query)
+            },
+            onStatusSelected = { status ->
+                if (status != state.selectedStatus) {
+                    listState.requestScrollToItem(index = 0)
+                }
+                onStatusSelected(status)
+            },
         )
         CharactersContent(
             characters = characters,
@@ -283,27 +289,21 @@ private fun CharactersContent(
 ) {
     val loadingCharactersDescription = stringResource(R.string.characters_loading)
     val loadingMoreDescription = stringResource(R.string.characters_loading_more)
+    val refreshState = characters.loadState.refresh
+    val hasReachedEnd = characters.loadState.append.endOfPaginationReached
 
     Box(modifier = modifier.fillMaxSize()) {
         when {
-            characters.loadState.refresh is LoadState.Loading &&
-                characters.itemCount == 0 -> {
-                CharacterSkeletonList(
-                    contentDescription = loadingCharactersDescription,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-
-            characters.loadState.refresh is LoadState.Error &&
-                characters.itemCount == 0 -> {
+            characters.itemCount == 0 && refreshState is LoadState.Error -> {
                 ErrorContent(
                     onRetry = characters::retry,
                     modifier = Modifier.align(Alignment.Center),
                 )
             }
 
-            characters.loadState.refresh is LoadState.NotLoading &&
-                characters.itemCount == 0 -> {
+            characters.itemCount == 0 &&
+                refreshState is LoadState.NotLoading &&
+                hasReachedEnd -> {
                 Text(
                     text = stringResource(R.string.characters_empty),
                     style = MaterialTheme.typography.bodyLarge,
@@ -312,6 +312,13 @@ private fun CharactersContent(
                         .semantics {
                             liveRegion = LiveRegionMode.Polite
                         },
+                )
+            }
+
+            characters.itemCount == 0 -> {
+                CharacterSkeletonList(
+                    contentDescription = loadingCharactersDescription,
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
 
@@ -327,7 +334,7 @@ private fun CharactersContent(
                                 columnCount = 1,
                             )
                         },
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+                    contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     items(

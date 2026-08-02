@@ -18,8 +18,6 @@ import com.tapasco.characters.presentation.detail.CharacterDetailScreen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation(
-    isDarkTheme: Boolean,
-    onDarkThemeChange: (Boolean) -> Unit,
     navController: NavHostController = rememberNavController(),
 ) {
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
@@ -30,8 +28,6 @@ fun AppNavigation(
         topBar = {
             AppTopBar(
                 canNavigateBack = canNavigateBack,
-                isDarkTheme = isDarkTheme,
-                onDarkThemeChange = onDarkThemeChange,
                 onBack = {
                     navController.popBackStack()
                 },

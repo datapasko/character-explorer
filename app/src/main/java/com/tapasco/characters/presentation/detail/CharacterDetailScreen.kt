@@ -31,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CollectionInfo
 import androidx.compose.ui.semantics.CollectionItemInfo
@@ -48,6 +49,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tapasco.characters.R
 import com.tapasco.characters.domain.model.Character
 import com.tapasco.characters.domain.model.Episode
+import com.tapasco.characters.presentation.mapper.labelRes
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -154,7 +156,7 @@ private fun CharacterDetailSuccess(
                         text = stringResource(
                             R.string.character_species_gender,
                             character.species,
-                            character.gender,
+                            stringResource(character.gender.labelRes),
                         ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyLarge,
@@ -235,7 +237,11 @@ private fun EpisodesSection(
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                text = stringResource(R.string.character_episode_count, episodeCount),
+                text = pluralStringResource(
+                    R.plurals.character_episode_count,
+                    episodeCount,
+                    episodeCount,
+                ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium,
             )
@@ -450,7 +456,7 @@ private fun shareCharacter(
             context.getString(
                 R.string.share_character_text,
                 character.name,
-                character.status,
+                context.getString(character.status.labelRes),
                 character.species,
                 character.imageUrl,
             ),

@@ -1,6 +1,7 @@
 package com.tapasco.characters.presentation.detail
 
 import androidx.activity.ComponentActivity
+import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -17,6 +18,9 @@ import com.tapasco.characters.R
 import com.tapasco.characters.domain.model.Character
 import com.tapasco.characters.domain.model.CharacterLocation
 import com.tapasco.characters.domain.model.Episode
+import com.tapasco.characters.domain.model.GenderCharacter
+import com.tapasco.characters.domain.model.StatusCharacter
+import com.tapasco.characters.presentation.mapper.labelRes
 import com.tapasco.characters.ui.theme.CharactersTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -100,7 +104,7 @@ class CharacterDetailScreenTest {
                 getString(
                     R.string.character_species_gender,
                     character.species,
-                    character.gender,
+                    getString(character.gender.labelRes),
                 ),
             )
             .assertIsDisplayed()
@@ -218,8 +222,9 @@ class CharacterDetailScreenTest {
 
         composeRule
             .onNodeWithText(
-                getString(
-                    R.string.character_episode_count,
+                getQuantityString(
+                    R.plurals.character_episode_count,
+                    character.episodeUrls.size,
                     character.episodeUrls.size,
                 ),
             )
@@ -257,6 +262,16 @@ class CharacterDetailScreenTest {
         @StringRes resourceId: Int,
         vararg formatArgs: Any,
     ): String = composeRule.activity.getString(resourceId, *formatArgs)
+
+    private fun getQuantityString(
+        @PluralsRes resourceId: Int,
+        quantity: Int,
+        vararg formatArgs: Any,
+    ): String = composeRule.activity.resources.getQuantityString(
+        resourceId,
+        quantity,
+        *formatArgs,
+    )
 }
 
 private fun testCharacter(
@@ -267,10 +282,10 @@ private fun testCharacter(
 ) = Character(
     id = 1,
     name = TEST_CHARACTER_NAME,
-    status = "Alive",
+    status = StatusCharacter.ALIVE,
     species = "Human",
     type = "",
-    gender = "Male",
+    gender = GenderCharacter.MALE,
     origin = CharacterLocation(
         name = "Earth (C-137)",
         url = "",
