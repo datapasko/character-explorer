@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -135,6 +136,49 @@ class CharactersScreenTest {
 
         composeRule
             .onNodeWithText(characters.first().name)
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun restoredScreen_keepsPreviousScrollPosition() {
+        val characters = (1..12).map(::testCharacter)
+        val pagingData = flowOf(
+            PagingData.from(
+                data = characters,
+                sourceLoadStates = COMPLETED_LOAD_STATES,
+            ),
+        )
+        val restorationTester = StateRestorationTester(composeRule)
+
+        restorationTester.setContent {
+            val lazyCharacters = pagingData.collectAsLazyPagingItems()
+
+            CharactersTheme {
+                CharactersScreenContent(
+                    state = CharactersState(),
+                    characters = lazyCharacters,
+                    onSearchQueryChange = {},
+                    onStatusSelected = {},
+                    onToggleFavorite = {},
+                    onCharacterClick = {},
+                )
+            }
+        }
+
+        waitForCharacter(characters.first().name)
+
+        composeRule
+            .onNodeWithTag(CHARACTERS_LIST_TEST_TAG)
+            .performScrollToIndex(characters.lastIndex)
+
+        composeRule
+            .onNodeWithText(characters.last().name)
+            .assertIsDisplayed()
+
+        restorationTester.emulateSavedInstanceStateRestore()
+
+        composeRule
+            .onNodeWithText(characters.last().name)
             .assertIsDisplayed()
     }
 

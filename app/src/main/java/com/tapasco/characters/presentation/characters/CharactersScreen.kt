@@ -36,7 +36,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -112,10 +111,6 @@ internal fun CharactersScreenContent(
 ) {
     val listState = rememberLazyListState()
 
-    LaunchedEffect(state.searchQuery, state.selectedStatus) {
-        listState.scrollToItem(index = 0)
-    }
-
     val collapseThresholdPx = with(LocalDensity.current) {
         HEADER_COLLAPSE_THRESHOLD.roundToPx()
     }
@@ -134,8 +129,18 @@ internal fun CharactersScreenContent(
             searchQuery = state.searchQuery,
             selectedStatus = state.selectedStatus,
             isCollapsed = isHeaderCollapsed,
-            onSearchQueryChange = onSearchQueryChange,
-            onStatusSelected = onStatusSelected,
+            onSearchQueryChange = { query ->
+                if (query != state.searchQuery) {
+                    listState.requestScrollToItem(index = 0)
+                }
+                onSearchQueryChange(query)
+            },
+            onStatusSelected = { status ->
+                if (status != state.selectedStatus) {
+                    listState.requestScrollToItem(index = 0)
+                }
+                onStatusSelected(status)
+            },
         )
         CharactersContent(
             characters = characters,
