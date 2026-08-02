@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -319,6 +320,17 @@ private fun CharacterDetails(
                 fontWeight = FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+            )
+
+            Text(
+                text = pluralStringResource(
+                    R.plurals.character_episode_count,
+                    character.episodeUrls.size,
+                    character.episodeUrls.size,
+                ),
+                color = MaterialTheme.colorScheme.secondary,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Medium,
             )
         }
     }

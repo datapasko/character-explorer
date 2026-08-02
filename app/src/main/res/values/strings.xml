@@ -34,7 +34,10 @@
     <string name="character_origin_label">Origin</string>
     <string name="character_location_label">Last known location</string>
     <string name="character_episodes_label">Episodes</string>
-    <string name="character_episode_count">%1$d appearances</string>
+    <plurals name="character_episode_count">
+        <item quantity="one">%1$d appearance</item>
+        <item quantity="other">%1$d appearances</item>
+    </plurals>
     <string name="character_episodes_loading">Loading episodes</string>
     <string name="character_episodes_load_error">Unable to load episode information.</string>
     <string name="character_episodes_empty">No episode information available.</string>

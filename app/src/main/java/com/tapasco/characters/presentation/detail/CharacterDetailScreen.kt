@@ -31,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CollectionInfo
 import androidx.compose.ui.semantics.CollectionItemInfo
@@ -236,7 +237,11 @@ private fun EpisodesSection(
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                text = stringResource(R.string.character_episode_count, episodeCount),
+                text = pluralStringResource(
+                    R.plurals.character_episode_count,
+                    episodeCount,
+                    episodeCount,
+                ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium,
             )

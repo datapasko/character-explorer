@@ -1,6 +1,7 @@
 package com.tapasco.characters.presentation.detail
 
 import androidx.activity.ComponentActivity
+import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -221,8 +222,9 @@ class CharacterDetailScreenTest {
 
         composeRule
             .onNodeWithText(
-                getString(
-                    R.string.character_episode_count,
+                getQuantityString(
+                    R.plurals.character_episode_count,
+                    character.episodeUrls.size,
                     character.episodeUrls.size,
                 ),
             )
@@ -260,6 +262,16 @@ class CharacterDetailScreenTest {
         @StringRes resourceId: Int,
         vararg formatArgs: Any,
     ): String = composeRule.activity.getString(resourceId, *formatArgs)
+
+    private fun getQuantityString(
+        @PluralsRes resourceId: Int,
+        quantity: Int,
+        vararg formatArgs: Any,
+    ): String = composeRule.activity.resources.getQuantityString(
+        resourceId,
+        quantity,
+        *formatArgs,
+    )
 }
 
 private fun testCharacter(

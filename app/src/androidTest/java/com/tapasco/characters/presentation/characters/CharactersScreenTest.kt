@@ -53,6 +53,16 @@ class CharactersScreenTest {
         waitForCharacter(character.name)
 
         composeRule
+            .onNodeWithText(
+                composeRule.activity.resources.getQuantityString(
+                    R.plurals.character_episode_count,
+                    character.episodeUrls.size,
+                    character.episodeUrls.size,
+                ),
+            )
+            .assertIsDisplayed()
+
+        composeRule
             .onNodeWithContentDescription(
                 composeRule.activity.getString(R.string.remove_from_favorites),
             )
