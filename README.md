@@ -1,6 +1,6 @@
 # MortyVerse
 
-MortyVerse is an Android character explorer built as a technical assessment. It provides an infinitely paginated character directory, search and status filters, character details, episode appearances, persistent favorites, and a theme selector.
+MortyVerse is an Android character explorer built as a technical assessment. It provides an infinitely paginated character directory, search and status filters, character details, episode appearances, persistent favorites, and automatic system theme support.
 
 ## Screenshots
 
@@ -21,7 +21,7 @@ MortyVerse is an Android character explorer built as a technical assessment. It 
 - Character detail fetched by ID.
 - Episode appearances loaded through the single or multi-ID API endpoints.
 - Independent episode loading and error states, keeping character details visible if episode loading fails.
-- Persistent favorites and theme preference with DataStore.
+- Persistent favorites with DataStore.
 - Light and dark themes.
 - Native SplashScreen API.
 - Character sharing through the Android Sharesheet.
@@ -38,16 +38,18 @@ flowchart LR
     VM --> UC[Use cases]
     UC --> RI[Repository interfaces]
     RI --> R[Repository implementations]
-    R --> API[Retrofit and Paging 3]
+    R --> DB[Room source of truth]
+    R --> API[Retrofit synchronization]
+    API --> DB
     R --> DS[Preferences DataStore]
 ```
 
 - **Presentation:** Jetpack Compose screens, immutable UI state, ViewModels, and lifecycle-aware state collection.
 - **Domain:** framework-independent models, repository contracts, and focused use cases.
-- **Data:** Retrofit service, DTO mappers, PagingSource, repository implementations, and DataStore preferences.
+- **Data:** Room source of truth, Retrofit synchronization, Paging 3 RemoteMediator, repository implementations, and DataStore preferences.
 - **Dependency injection:** Koin modules provide networking, repositories, use cases, ViewModels, and the injected IO dispatcher.
 
-The UI observes `StateFlow` and `PagingData`, sends user events to ViewModels, and renders loading, content, empty, and error states. Network work is moved to an injected IO dispatcher. Suspending repository operations return Kotlin `Result`, while `CancellationException` is rethrown to preserve structured concurrency.
+The UI observes `StateFlow` and `PagingData`, sends user events to ViewModels, and renders loading, content, empty, and error states. Character and episode reads come from Room so cached content remains available offline. Retrofit refreshes stale local data, and `RemoteMediator` coordinates paginated network loads with query-specific database results. Suspending repository operations return Kotlin `Result`, while `CancellationException` is rethrown to preserve structured concurrency.
 
 ## Project structure
 
@@ -57,12 +59,13 @@ com.tapasco.characters
 │   ├── di                  # Koin modules and dispatcher qualifiers
 │   └── utils               # Coroutine and query helpers
 ├── data
-│   ├── mapper              # DTO-to-domain mapping
+│   ├── local               # Room database, DAOs, entities, and converters
+│   ├── mapper              # Network-local-domain mapping
 │   ├── preferences         # Preferences DataStore
 │   ├── remote
 │   │   ├── api             # Retrofit endpoints
 │   │   ├── dto             # Network models
-│   │   └── paging          # CharactersPagingSource
+│   │   └── paging          # CharactersRemoteMediator
 │   └── repository          # Repository implementations
 ├── domain
 │   ├── model               # Character, location, and episode models
@@ -82,6 +85,7 @@ com.tapasco.characters
 - Jetpack Compose with Material 3
 - AndroidX Navigation Compose with type-safe routes
 - AndroidX Paging 3
+- Room
 - Retrofit, OkHttp, and Gson
 - Kotlin Coroutines and Flow
 - Koin
@@ -96,7 +100,7 @@ com.tapasco.characters
 - Android Studio with Android SDK 37 installed.
 - JDK 21. The Gradle daemon toolchain is configured in the project.
 - Android 7.0 / API 24 or newer for the target device.
-- Internet access for remote character and episode data.
+- Internet access for the first load and background refreshes. Cached content remains available offline.
 
 No API key or local secret is required.
 
@@ -112,12 +116,12 @@ Open the project in Android Studio and run the `app` configuration on an emulato
 
 ## Testing and quality checks
 
-The project currently contains 18 local unit tests and 12 instrumented tests.
+The project currently contains 21 local unit tests and 24 instrumented tests.
 
 | Test layer | Main coverage |
 | --- | --- |
-| Unit | ViewModel state transitions, search debounce, favorites, repository mapping, pagination, API failures, episode batching, and coroutine cancellation |
-| Instrumented | Character list interactions, filter scroll reset, detail states, sharing, accessibility semantics, and DataStore persistence |
+| Unit | ViewModel state transitions, search debounce, favorites, offline mapping, episode caching, API failures, and coroutine cancellation |
+| Instrumented | Room persistence, RemoteMediator cache retention, list interactions, detail states, sharing, accessibility, and DataStore persistence |
 
 Run local unit tests:
 
@@ -145,10 +149,10 @@ Build and run all local verification tasks:
 
 ## Error handling
 
-- `PagingSource` maps network and HTTP failures to Paging load states.
+- `RemoteMediator` maps network and HTTP failures to Paging load states without deleting cached rows.
 - A `404` caused by filters is treated as an empty result.
 - Initial and append failures expose separate retry actions.
-- Character and episode requests expose independent states.
+- Character and episode requests expose independent states and fall back to complete stale caches.
 - Episode failures do not discard successfully loaded character data.
 - Coroutine cancellation is propagated rather than converted into a business failure.
 
@@ -165,7 +169,7 @@ The history includes feature merges for dependency injection, networking, the ch
 ## Possible next steps
 
 - Add a dedicated favorites-only destination.
-- Cache remote content with Room for offline support.
+- Add a manual pull-to-refresh action and surface non-blocking stale-cache warnings.
 - Add localization beyond English.
 - Add screenshot regression tests and CI verification.
 

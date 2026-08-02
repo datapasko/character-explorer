@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.tapasco.characters.R
 import com.tapasco.characters.domain.model.Character
+import com.tapasco.characters.presentation.mapper.labelRes
 import com.tapasco.characters.ui.theme.CharacterDetailMotionTokens
 import com.tapasco.characters.ui.theme.CharactersMotion
 import com.tapasco.characters.ui.theme.InterdimensionalGreen
@@ -75,6 +77,9 @@ internal fun CharacterDetailHero(
             AsyncImage(
                 model = character.imageUrl,
                 contentDescription = portraitDescription,
+                placeholder = painterResource(R.drawable.character_image_placeholder),
+                error = painterResource(R.drawable.character_image_placeholder),
+                fallback = painterResource(R.drawable.character_image_placeholder),
                 modifier = Modifier
                     .size(portraitSize)
                     .clip(CircleShape)
@@ -98,7 +103,7 @@ internal fun CharacterDetailHero(
 
             DetailBadge(
                 label = stringResource(R.string.character_status_label),
-                value = character.status.uppercase(),
+                value = stringResource(character.status.labelRes).uppercase(),
                 accentColor = characterStatusColor(character.status),
                 modifier = Modifier
                     .align(Alignment.CenterEnd)

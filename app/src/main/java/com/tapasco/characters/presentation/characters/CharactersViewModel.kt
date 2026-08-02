@@ -3,8 +3,9 @@ package com.tapasco.characters.presentation.characters
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
-import com.tapasco.characters.domain.repository.PreferencesRepository
 import com.tapasco.characters.domain.usecase.GetCharactersUseCase
+import com.tapasco.characters.domain.usecase.GetFavoriteCharacterIdsUseCase
+import com.tapasco.characters.domain.usecase.ToggleFavoriteCharacterUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,13 +20,14 @@ import kotlinx.coroutines.launch
 
 class CharactersViewModel(
     getCharactersUseCase: GetCharactersUseCase,
-    private val preferencesRepository: PreferencesRepository,
+    getFavoriteCharacterIdsUseCase: GetFavoriteCharacterIdsUseCase,
+    private val toggleFavoriteCharacterUseCase: ToggleFavoriteCharacterUseCase,
 ) : ViewModel() {
     private val filters = MutableStateFlow(CharacterFilters())
 
     val uiState: StateFlow<CharactersState> = combine(
         filters,
-        preferencesRepository.favoriteCharacterIds,
+        getFavoriteCharacterIdsUseCase(),
     ) { filters, favoriteCharacterIds ->
         CharactersState(
             searchQuery = filters.searchQuery,
@@ -73,7 +75,7 @@ class CharactersViewModel(
 
     private fun toggleFavorite(characterId: Int) {
         viewModelScope.launch {
-            preferencesRepository.toggleFavoriteCharacter(characterId)
+            toggleFavoriteCharacterUseCase(characterId)
         }
     }
 }

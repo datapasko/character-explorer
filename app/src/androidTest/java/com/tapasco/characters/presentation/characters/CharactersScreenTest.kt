@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -22,7 +23,11 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.tapasco.characters.R
 import com.tapasco.characters.domain.model.Character
 import com.tapasco.characters.domain.model.CharacterLocation
+import com.tapasco.characters.domain.model.GenderCharacter
+import com.tapasco.characters.domain.model.StatusCharacter
 import com.tapasco.characters.ui.theme.CharactersTheme
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -46,6 +51,16 @@ class CharactersScreenTest {
             onCharacterClick = { openedCharacterId = it },
         )
         waitForCharacter(character.name)
+
+        composeRule
+            .onNodeWithText(
+                composeRule.activity.resources.getQuantityString(
+                    R.plurals.character_episode_count,
+                    character.episodeUrls.size,
+                    character.episodeUrls.size,
+                ),
+            )
+            .assertIsDisplayed()
 
         composeRule
             .onNodeWithContentDescription(
@@ -134,6 +149,109 @@ class CharactersScreenTest {
             .assertIsDisplayed()
     }
 
+    @Test
+    fun restoredScreen_keepsPreviousScrollPosition() {
+        val characters = (1..12).map(::testCharacter)
+        val pagingData = flowOf(
+            PagingData.from(
+                data = characters,
+                sourceLoadStates = COMPLETED_LOAD_STATES,
+            ),
+        )
+        val restorationTester = StateRestorationTester(composeRule)
+
+        restorationTester.setContent {
+            val lazyCharacters = pagingData.collectAsLazyPagingItems()
+
+            CharactersTheme {
+                CharactersScreenContent(
+                    state = CharactersState(),
+                    characters = lazyCharacters,
+                    onSearchQueryChange = {},
+                    onStatusSelected = {},
+                    onToggleFavorite = {},
+                    onCharacterClick = {},
+                )
+            }
+        }
+
+        waitForCharacter(characters.first().name)
+
+        composeRule
+            .onNodeWithTag(CHARACTERS_LIST_TEST_TAG)
+            .performScrollToIndex(characters.lastIndex)
+
+        composeRule
+            .onNodeWithText(characters.last().name)
+            .assertIsDisplayed()
+
+        restorationTester.emulateSavedInstanceStateRestore()
+
+        composeRule
+            .onNodeWithText(characters.last().name)
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun initialPagingState_showsLoadingInsteadOfEmptyMessage() {
+        setScreenContent(
+            state = CharactersState(),
+            pagingData = MutableSharedFlow(),
+        )
+
+        composeRule
+            .onNodeWithContentDescription(
+                composeRule.activity.getString(R.string.characters_loading),
+            )
+            .assertIsDisplayed()
+
+        composeRule
+            .onNodeWithText(composeRule.activity.getString(R.string.characters_empty))
+            .assertDoesNotExist()
+    }
+
+    @Test
+    fun completedEmptyPagingState_showsEmptyMessage() {
+        setScreenContent(
+            state = CharactersState(),
+            pagingData = flowOf(
+                PagingData.from(
+                    data = emptyList(),
+                    sourceLoadStates = COMPLETED_LOAD_STATES,
+                    mediatorLoadStates = COMPLETED_LOAD_STATES,
+                ),
+            ),
+        )
+
+        composeRule
+            .onNodeWithText(composeRule.activity.getString(R.string.characters_empty))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun refreshCompletedWithMorePages_doesNotShowTransientEmptyMessage() {
+        setScreenContent(
+            state = CharactersState(),
+            pagingData = flowOf(
+                PagingData.from(
+                    data = emptyList(),
+                    sourceLoadStates = REFRESHED_WITH_MORE_PAGES_LOAD_STATES,
+                    mediatorLoadStates = REFRESHED_WITH_MORE_PAGES_LOAD_STATES,
+                ),
+            ),
+        )
+
+        composeRule
+            .onNodeWithContentDescription(
+                composeRule.activity.getString(R.string.characters_loading),
+            )
+            .assertIsDisplayed()
+
+        composeRule
+            .onNodeWithText(composeRule.activity.getString(R.string.characters_empty))
+            .assertDoesNotExist()
+    }
+
     private fun setScreenContent(
         state: CharactersState,
         characters: List<Character>,
@@ -149,6 +267,24 @@ class CharactersScreenTest {
             ),
         )
 
+        setScreenContent(
+            state = state,
+            pagingData = pagingData,
+            onSearchQueryChange = onSearchQueryChange,
+            onStatusSelected = onStatusSelected,
+            onToggleFavorite = onToggleFavorite,
+            onCharacterClick = onCharacterClick,
+        )
+    }
+
+    private fun setScreenContent(
+        state: CharactersState,
+        pagingData: Flow<PagingData<Character>>,
+        onSearchQueryChange: (String) -> Unit = {},
+        onStatusSelected: (CharacterStatusFilter) -> Unit = {},
+        onToggleFavorite: (Int) -> Unit = {},
+        onCharacterClick: (Int) -> Unit = {},
+    ) {
         composeRule.setContent {
             val lazyCharacters = pagingData.collectAsLazyPagingItems()
 
@@ -180,10 +316,10 @@ private fun testCharacter(
 ) = Character(
     id = id,
     name = if (id == 1) "Rick Sanchez" else "Character $id",
-    status = "Alive",
+    status = StatusCharacter.ALIVE,
     species = "Human",
     type = "",
-    gender = "Male",
+    gender = GenderCharacter.MALE,
     origin = CharacterLocation(name = "Earth", url = ""),
     location = CharacterLocation(name = "Citadel of Ricks", url = ""),
     imageUrl = "",
@@ -197,4 +333,10 @@ private val COMPLETED_LOAD_STATES = LoadStates(
     refresh = LoadState.NotLoading(endOfPaginationReached = true),
     prepend = LoadState.NotLoading(endOfPaginationReached = true),
     append = LoadState.NotLoading(endOfPaginationReached = true),
+)
+
+private val REFRESHED_WITH_MORE_PAGES_LOAD_STATES = LoadStates(
+    refresh = LoadState.NotLoading(endOfPaginationReached = false),
+    prepend = LoadState.NotLoading(endOfPaginationReached = true),
+    append = LoadState.NotLoading(endOfPaginationReached = false),
 )

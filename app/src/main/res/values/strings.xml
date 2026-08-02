@@ -9,6 +9,10 @@
     <string name="status_alive">Alive</string>
     <string name="status_dead">Dead</string>
     <string name="status_unknown">Unknown</string>
+    <string name="gender_female">Female</string>
+    <string name="gender_male">Male</string>
+    <string name="gender_genderless">Genderless</string>
+    <string name="gender_unknown">Unknown</string>
     <string name="status_filter_subtitle">Alive, dead… or who knows?</string>
     <string name="characters_empty">No characters found</string>
     <string name="characters_loading">Loading characters</string>
@@ -30,7 +34,10 @@
     <string name="character_origin_label">Origin</string>
     <string name="character_location_label">Last known location</string>
     <string name="character_episodes_label">Episodes</string>
-    <string name="character_episode_count">%1$d appearances</string>
+    <plurals name="character_episode_count">
+        <item quantity="one">%1$d appearance</item>
+        <item quantity="other">%1$d appearances</item>
+    </plurals>
     <string name="character_episodes_loading">Loading episodes</string>
     <string name="character_episodes_load_error">Unable to load episode information.</string>
     <string name="character_episodes_empty">No episode information available.</string>
@@ -43,6 +50,4 @@
     <string name="favorite_state_selected">Favorite</string>
     <string name="favorite_state_not_selected">Not favorite</string>
     <string name="navigate_back">Back</string>
-    <string name="switch_to_dark_mode">Switch to dark mode</string>
-    <string name="switch_to_light_mode">Switch to light mode</string>
 </resources>

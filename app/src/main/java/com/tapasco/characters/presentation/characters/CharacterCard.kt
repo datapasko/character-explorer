@@ -35,6 +35,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -47,6 +49,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.tapasco.characters.R
 import com.tapasco.characters.domain.model.Character
+import com.tapasco.characters.domain.model.StatusCharacter
+import com.tapasco.characters.presentation.mapper.labelRes
 import com.tapasco.characters.ui.theme.CharactersMotion
 import com.tapasco.characters.ui.theme.FavoriteMotionTokens
 import com.tapasco.characters.ui.theme.InterdimensionalNeutral
@@ -131,6 +135,9 @@ private fun CharacterImage(
         AsyncImage(
             model = character.imageUrl,
             contentDescription = null,
+            placeholder = painterResource(R.drawable.character_image_placeholder),
+            error = painterResource(R.drawable.character_image_placeholder),
+            fallback = painterResource(R.drawable.character_image_placeholder),
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
         )
@@ -225,13 +232,14 @@ private fun FavoriteButton(
 
 @Composable
 private fun CharacterStatusBadge(
-    status: String,
+    status: StatusCharacter,
     modifier: Modifier = Modifier,
 ) {
     val statusColor = characterStatusColor(status)
+    val statusLabel = stringResource(status.labelRes)
     val statusDescription = stringResource(
         R.string.character_status_description,
-        status,
+        statusLabel,
     )
 
     Surface(
@@ -243,7 +251,7 @@ private fun CharacterStatusBadge(
         border = BorderStroke(1.dp, statusColor.copy(alpha = 0.4f)),
     ) {
         Text(
-            text = status.uppercase(),
+            text = statusLabel.uppercase(),
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
             color = statusColor,
             style = MaterialTheme.typography.labelMedium,
@@ -312,6 +320,17 @@ private fun CharacterDetails(
                 fontWeight = FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+            )
+
+            Text(
+                text = pluralStringResource(
+                    R.plurals.character_episode_count,
+                    character.episodeUrls.size,
+                    character.episodeUrls.size,
+                ),
+                color = MaterialTheme.colorScheme.secondary,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Medium,
             )
         }
     }
