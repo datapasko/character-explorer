@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.tapasco.characters.R
 import com.tapasco.characters.domain.model.Character
+import com.tapasco.characters.presentation.mapper.labelRes
 import com.tapasco.characters.ui.theme.CharacterDetailMotionTokens
 import com.tapasco.characters.ui.theme.CharactersMotion
 import com.tapasco.characters.ui.theme.InterdimensionalGreen
@@ -98,7 +99,7 @@ internal fun CharacterDetailHero(
 
             DetailBadge(
                 label = stringResource(R.string.character_status_label),
-                value = character.status.uppercase(),
+                value = stringResource(character.status.labelRes).uppercase(),
                 accentColor = characterStatusColor(character.status),
                 modifier = Modifier
                     .align(Alignment.CenterEnd)

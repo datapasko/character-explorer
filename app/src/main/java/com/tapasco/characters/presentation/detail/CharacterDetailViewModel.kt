@@ -5,67 +5,80 @@ import androidx.lifecycle.viewModelScope
 import com.tapasco.characters.domain.model.Character
 import com.tapasco.characters.domain.usecase.GetCharacterUseCase
 import com.tapasco.characters.domain.usecase.GetEpisodesUseCase
+import com.tapasco.characters.domain.usecase.RefreshCharacterUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class CharacterDetailViewModel(
     private val characterId: Int,
     private val getCharacterUseCase: GetCharacterUseCase,
+    private val refreshCharacterUseCase: RefreshCharacterUseCase,
     private val getEpisodesUseCase: GetEpisodesUseCase,
 ) : ViewModel() {
     private val _state = MutableStateFlow(CharacterDetailState())
     val state: StateFlow<CharacterDetailState> = _state.asStateFlow()
 
+    private var loadedEpisodeUrls: List<String>? = null
+
     init {
-        loadCharacter()
+        observeCharacter()
+        refreshCharacter()
     }
 
     fun retry() {
-        loadCharacter()
+        refreshCharacter(forceRefresh = true)
     }
 
     fun retryEpisodes() {
         _state.value.character?.let(::loadEpisodes)
     }
 
-    private fun loadCharacter() {
+    private fun observeCharacter() {
         viewModelScope.launch {
-            _state.update { currentState ->
-                currentState.copy(
-                    isLoading = true,
-                    hasError = false,
-                )
+            getCharacterUseCase(characterId).collectLatest { character ->
+                if (character == null) return@collectLatest
+
+                _state.update { currentState ->
+                    currentState.copy(
+                        isLoading = false,
+                        hasError = false,
+                        character = character,
+                    )
+                }
+
+                if (loadedEpisodeUrls != character.episodeUrls) {
+                    loadedEpisodeUrls = character.episodeUrls
+                    loadEpisodes(character)
+                }
             }
-            getCharacterUseCase(characterId).fold(
-                onSuccess = ::onCharacterLoaded,
-                onFailure = {
-                    _state.update { currentState ->
-                        currentState.copy(
-                            isLoading = false,
-                            hasError = true,
-                        )
-                    }
-                },
-            )
         }
     }
 
-    private fun onCharacterLoaded(character: Character) {
-        _state.update { currentState ->
-            currentState.copy(
-                isLoading = false,
-                hasError = false,
-                character = character,
-                episodes = emptyList(),
-                isEpisodesLoading = character.episodeUrls.isNotEmpty(),
-                hasEpisodesError = false,
-            )
-        }
+    private fun refreshCharacter(forceRefresh: Boolean = false) {
+        viewModelScope.launch {
+            _state.update { currentState ->
+                currentState.copy(
+                    isLoading = currentState.character == null,
+                    hasError = false,
+                )
+            }
 
-        loadEpisodes(character)
+            refreshCharacterUseCase(
+                characterId = characterId,
+                forceRefresh = forceRefresh,
+            ).onFailure {
+                _state.update { currentState ->
+                    currentState.copy(
+                        isLoading = false,
+                        hasError = currentState.character == null,
+                    )
+                }
+            }
+        }
     }
 
     private fun loadEpisodes(character: Character) {

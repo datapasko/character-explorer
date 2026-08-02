@@ -10,5 +10,10 @@ interface CharactersRepository {
         status: String? = null,
     ): Flow<PagingData<Character>>
 
-    suspend fun getCharacter(characterId: Int): Result<Character>
+    fun observeCharacter(characterId: Int): Flow<Character?>
+
+    suspend fun refreshCharacter(
+        characterId: Int,
+        forceRefresh: Boolean = false,
+    ): Result<Unit>
 }
