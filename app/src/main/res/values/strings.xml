@@ -47,6 +47,4 @@
     <string name="favorite_state_selected">Favorite</string>
     <string name="favorite_state_not_selected">Not favorite</string>
     <string name="navigate_back">Back</string>
-    <string name="switch_to_dark_mode">Switch to dark mode</string>
-    <string name="switch_to_light_mode">Switch to light mode</string>
 </resources>

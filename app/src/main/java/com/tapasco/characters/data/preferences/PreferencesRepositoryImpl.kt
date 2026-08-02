@@ -3,7 +3,6 @@ package com.tapasco.characters.data.preferences
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringSetPreferencesKey
@@ -31,11 +30,6 @@ class PreferencesRepositoryImpl(
             }
         }
 
-    override val isDarkTheme: Flow<Boolean?> = preferences
-        .map { preferences ->
-            preferences[IS_DARK_THEME]
-        }
-
     override val favoriteCharacterIds: Flow<Set<Int>> = preferences
         .map { preferences ->
             preferences[FAVORITE_CHARACTER_IDS]
@@ -43,12 +37,6 @@ class PreferencesRepositoryImpl(
                 .mapNotNull(String::toIntOrNull)
                 .toSet()
         }
-
-    override suspend fun setDarkTheme(isDarkTheme: Boolean) {
-        dataStore.edit { preferences ->
-            preferences[IS_DARK_THEME] = isDarkTheme
-        }
-    }
 
     override suspend fun toggleFavoriteCharacter(characterId: Int) {
         dataStore.edit { preferences ->
@@ -66,7 +54,6 @@ class PreferencesRepositoryImpl(
     }
 
     private companion object {
-        val IS_DARK_THEME = booleanPreferencesKey("is_dark_theme")
         val FAVORITE_CHARACTER_IDS = stringSetPreferencesKey("favorite_character_ids")
     }
 }
