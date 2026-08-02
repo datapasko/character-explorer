@@ -22,6 +22,8 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.tapasco.characters.R
 import com.tapasco.characters.domain.model.Character
 import com.tapasco.characters.domain.model.CharacterLocation
+import com.tapasco.characters.domain.model.GenderCharacter
+import com.tapasco.characters.domain.model.StatusCharacter
 import com.tapasco.characters.ui.theme.CharactersTheme
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
@@ -180,10 +182,10 @@ private fun testCharacter(
 ) = Character(
     id = id,
     name = if (id == 1) "Rick Sanchez" else "Character $id",
-    status = "Alive",
+    status = StatusCharacter.ALIVE,
     species = "Human",
     type = "",
-    gender = "Male",
+    gender = GenderCharacter.MALE,
     origin = CharacterLocation(name = "Earth", url = ""),
     location = CharacterLocation(name = "Citadel of Ricks", url = ""),
     imageUrl = "",

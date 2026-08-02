@@ -17,6 +17,9 @@ import com.tapasco.characters.R
 import com.tapasco.characters.domain.model.Character
 import com.tapasco.characters.domain.model.CharacterLocation
 import com.tapasco.characters.domain.model.Episode
+import com.tapasco.characters.domain.model.GenderCharacter
+import com.tapasco.characters.domain.model.StatusCharacter
+import com.tapasco.characters.presentation.mapper.labelRes
 import com.tapasco.characters.ui.theme.CharactersTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -100,7 +103,7 @@ class CharacterDetailScreenTest {
                 getString(
                     R.string.character_species_gender,
                     character.species,
-                    character.gender,
+                    getString(character.gender.labelRes),
                 ),
             )
             .assertIsDisplayed()
@@ -267,10 +270,10 @@ private fun testCharacter(
 ) = Character(
     id = 1,
     name = TEST_CHARACTER_NAME,
-    status = "Alive",
+    status = StatusCharacter.ALIVE,
     species = "Human",
     type = "",
-    gender = "Male",
+    gender = GenderCharacter.MALE,
     origin = CharacterLocation(
         name = "Earth (C-137)",
         url = "",

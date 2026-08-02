@@ -5,12 +5,16 @@ import com.tapasco.characters.MainDispatcherRule
 import com.tapasco.characters.domain.model.Character
 import com.tapasco.characters.domain.model.CharacterLocation
 import com.tapasco.characters.domain.model.Episode
+import com.tapasco.characters.domain.model.GenderCharacter
+import com.tapasco.characters.domain.model.StatusCharacter
 import com.tapasco.characters.domain.repository.CharactersRepository
 import com.tapasco.characters.domain.repository.EpisodesRepository
 import com.tapasco.characters.domain.usecase.GetCharacterUseCase
 import com.tapasco.characters.domain.usecase.GetEpisodesUseCase
+import com.tapasco.characters.domain.usecase.RefreshCharacterUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -101,6 +105,7 @@ class CharacterDetailViewModelTest {
         runCurrent()
 
         assertEquals(listOf(character.id, character.id), repository.requestedIds)
+        assertEquals(listOf(false, true), repository.forceRefreshRequests)
         assertEquals(
             CharacterDetailState(
                 isLoading = false,
@@ -203,6 +208,30 @@ class CharacterDetailViewModelTest {
         )
     }
 
+    @Test
+    fun cachedCharacter_remainsVisibleWhenBackgroundRefreshFails() = runTest {
+        val character = testCharacter()
+        val repository = FakeCharactersRepository(
+            responses = ArrayDeque(
+                listOf(Result.failure(IllegalStateException("Offline"))),
+            ),
+            initialCharacter = character,
+        )
+        val viewModel = createViewModel(repository = repository)
+
+        runCurrent()
+
+        assertEquals(
+            CharacterDetailState(
+                isLoading = false,
+                character = character,
+                episodes = listOf(testEpisode()),
+            ),
+            viewModel.state.value,
+        )
+        assertEquals(listOf(character.id), repository.requestedIds)
+    }
+
     private fun createViewModel(
         characterId: Int = 1,
         repository: FakeCharactersRepository,
@@ -214,23 +243,35 @@ class CharacterDetailViewModelTest {
     ) = CharacterDetailViewModel(
         characterId = characterId,
         getCharacterUseCase = GetCharacterUseCase(repository),
+        refreshCharacterUseCase = RefreshCharacterUseCase(repository),
         getEpisodesUseCase = GetEpisodesUseCase(episodesRepository),
     )
 }
 
 private class FakeCharactersRepository(
     private val responses: ArrayDeque<Result<Character>>,
+    initialCharacter: Character? = null,
 ) : CharactersRepository {
     val requestedIds = mutableListOf<Int>()
+    val forceRefreshRequests = mutableListOf<Boolean>()
+    private val character = MutableStateFlow(initialCharacter)
 
     override fun getCharacters(
         name: String?,
         status: String?,
     ): Flow<PagingData<Character>> = flowOf(PagingData.empty())
 
-    override suspend fun getCharacter(characterId: Int): Result<Character> {
+    override fun observeCharacter(characterId: Int): Flow<Character?> = character
+
+    override suspend fun refreshCharacter(
+        characterId: Int,
+        forceRefresh: Boolean,
+    ): Result<Unit> {
         requestedIds += characterId
-        return responses.removeFirst()
+        forceRefreshRequests += forceRefresh
+        return responses.removeFirst().map { refreshedCharacter ->
+            character.value = refreshedCharacter
+        }
     }
 }
 

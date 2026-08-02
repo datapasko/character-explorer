@@ -6,6 +6,8 @@ import com.tapasco.characters.domain.model.Character
 import com.tapasco.characters.domain.repository.CharactersRepository
 import com.tapasco.characters.domain.repository.PreferencesRepository
 import com.tapasco.characters.domain.usecase.GetCharactersUseCase
+import com.tapasco.characters.domain.usecase.GetFavoriteCharacterIdsUseCase
+import com.tapasco.characters.domain.usecase.ToggleFavoriteCharacterUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -88,7 +90,8 @@ class CharactersViewModelTest {
         preferencesRepository: FakePreferencesRepository = FakePreferencesRepository(),
     ) = CharactersViewModel(
         getCharactersUseCase = GetCharactersUseCase(charactersRepository),
-        preferencesRepository = preferencesRepository,
+        getFavoriteCharacterIdsUseCase = GetFavoriteCharacterIdsUseCase(preferencesRepository),
+        toggleFavoriteCharacterUseCase = ToggleFavoriteCharacterUseCase(preferencesRepository),
     )
 }
 
@@ -103,17 +106,17 @@ private class FakeCharactersRepository : CharactersRepository {
         return flowOf(PagingData.empty())
     }
 
-    override suspend fun getCharacter(
+    override fun observeCharacter(characterId: Int): Flow<Character?> = flowOf(null)
+
+    override suspend fun refreshCharacter(
         characterId: Int,
-    ): Result<Character> = error("Not needed for CharactersViewModel tests")
+        forceRefresh: Boolean,
+    ): Result<Unit> = error("Not needed for CharactersViewModel tests")
 }
 
 private class FakePreferencesRepository : PreferencesRepository {
-    override val isDarkTheme = MutableStateFlow<Boolean?>(null)
     override val favoriteCharacterIds = MutableStateFlow<Set<Int>>(emptySet())
     val toggledCharacterIds = mutableListOf<Int>()
-
-    override suspend fun setDarkTheme(isDarkTheme: Boolean) = Unit
 
     override suspend fun toggleFavoriteCharacter(characterId: Int) {
         toggledCharacterIds += characterId
