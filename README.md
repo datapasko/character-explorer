@@ -116,7 +116,7 @@ Open the project in Android Studio and run the `app` configuration on an emulato
 
 ## Testing and quality checks
 
-The project currently contains 21 local unit tests and 20 instrumented tests.
+The project currently contains 21 local unit tests and 23 instrumented tests.
 
 | Test layer | Main coverage |
 | --- | --- |

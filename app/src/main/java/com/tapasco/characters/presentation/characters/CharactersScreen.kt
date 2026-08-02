@@ -11,6 +11,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -283,27 +284,21 @@ private fun CharactersContent(
 ) {
     val loadingCharactersDescription = stringResource(R.string.characters_loading)
     val loadingMoreDescription = stringResource(R.string.characters_loading_more)
+    val refreshState = characters.loadState.refresh
+    val hasReachedEnd = characters.loadState.append.endOfPaginationReached
 
     Box(modifier = modifier.fillMaxSize()) {
         when {
-            characters.loadState.refresh is LoadState.Loading &&
-                characters.itemCount == 0 -> {
-                CharacterSkeletonList(
-                    contentDescription = loadingCharactersDescription,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
-
-            characters.loadState.refresh is LoadState.Error &&
-                characters.itemCount == 0 -> {
+            characters.itemCount == 0 && refreshState is LoadState.Error -> {
                 ErrorContent(
                     onRetry = characters::retry,
                     modifier = Modifier.align(Alignment.Center),
                 )
             }
 
-            characters.loadState.refresh is LoadState.NotLoading &&
-                characters.itemCount == 0 -> {
+            characters.itemCount == 0 &&
+                refreshState is LoadState.NotLoading &&
+                hasReachedEnd -> {
                 Text(
                     text = stringResource(R.string.characters_empty),
                     style = MaterialTheme.typography.bodyLarge,
@@ -312,6 +307,13 @@ private fun CharactersContent(
                         .semantics {
                             liveRegion = LiveRegionMode.Polite
                         },
+                )
+            }
+
+            characters.itemCount == 0 -> {
+                CharacterSkeletonList(
+                    contentDescription = loadingCharactersDescription,
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
 
@@ -327,7 +329,7 @@ private fun CharactersContent(
                                 columnCount = 1,
                             )
                         },
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+                    contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     items(

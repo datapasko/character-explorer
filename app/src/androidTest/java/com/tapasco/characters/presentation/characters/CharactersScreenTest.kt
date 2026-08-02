@@ -25,6 +25,8 @@ import com.tapasco.characters.domain.model.CharacterLocation
 import com.tapasco.characters.domain.model.GenderCharacter
 import com.tapasco.characters.domain.model.StatusCharacter
 import com.tapasco.characters.ui.theme.CharactersTheme
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -136,6 +138,66 @@ class CharactersScreenTest {
             .assertIsDisplayed()
     }
 
+    @Test
+    fun initialPagingState_showsLoadingInsteadOfEmptyMessage() {
+        setScreenContent(
+            state = CharactersState(),
+            pagingData = MutableSharedFlow(),
+        )
+
+        composeRule
+            .onNodeWithContentDescription(
+                composeRule.activity.getString(R.string.characters_loading),
+            )
+            .assertIsDisplayed()
+
+        composeRule
+            .onNodeWithText(composeRule.activity.getString(R.string.characters_empty))
+            .assertDoesNotExist()
+    }
+
+    @Test
+    fun completedEmptyPagingState_showsEmptyMessage() {
+        setScreenContent(
+            state = CharactersState(),
+            pagingData = flowOf(
+                PagingData.from(
+                    data = emptyList(),
+                    sourceLoadStates = COMPLETED_LOAD_STATES,
+                    mediatorLoadStates = COMPLETED_LOAD_STATES,
+                ),
+            ),
+        )
+
+        composeRule
+            .onNodeWithText(composeRule.activity.getString(R.string.characters_empty))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun refreshCompletedWithMorePages_doesNotShowTransientEmptyMessage() {
+        setScreenContent(
+            state = CharactersState(),
+            pagingData = flowOf(
+                PagingData.from(
+                    data = emptyList(),
+                    sourceLoadStates = REFRESHED_WITH_MORE_PAGES_LOAD_STATES,
+                    mediatorLoadStates = REFRESHED_WITH_MORE_PAGES_LOAD_STATES,
+                ),
+            ),
+        )
+
+        composeRule
+            .onNodeWithContentDescription(
+                composeRule.activity.getString(R.string.characters_loading),
+            )
+            .assertIsDisplayed()
+
+        composeRule
+            .onNodeWithText(composeRule.activity.getString(R.string.characters_empty))
+            .assertDoesNotExist()
+    }
+
     private fun setScreenContent(
         state: CharactersState,
         characters: List<Character>,
@@ -151,6 +213,24 @@ class CharactersScreenTest {
             ),
         )
 
+        setScreenContent(
+            state = state,
+            pagingData = pagingData,
+            onSearchQueryChange = onSearchQueryChange,
+            onStatusSelected = onStatusSelected,
+            onToggleFavorite = onToggleFavorite,
+            onCharacterClick = onCharacterClick,
+        )
+    }
+
+    private fun setScreenContent(
+        state: CharactersState,
+        pagingData: Flow<PagingData<Character>>,
+        onSearchQueryChange: (String) -> Unit = {},
+        onStatusSelected: (CharacterStatusFilter) -> Unit = {},
+        onToggleFavorite: (Int) -> Unit = {},
+        onCharacterClick: (Int) -> Unit = {},
+    ) {
         composeRule.setContent {
             val lazyCharacters = pagingData.collectAsLazyPagingItems()
 
@@ -199,4 +279,10 @@ private val COMPLETED_LOAD_STATES = LoadStates(
     refresh = LoadState.NotLoading(endOfPaginationReached = true),
     prepend = LoadState.NotLoading(endOfPaginationReached = true),
     append = LoadState.NotLoading(endOfPaginationReached = true),
+)
+
+private val REFRESHED_WITH_MORE_PAGES_LOAD_STATES = LoadStates(
+    refresh = LoadState.NotLoading(endOfPaginationReached = false),
+    prepend = LoadState.NotLoading(endOfPaginationReached = true),
+    append = LoadState.NotLoading(endOfPaginationReached = false),
 )
