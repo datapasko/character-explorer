@@ -37,6 +37,14 @@ val dataModule = module {
         GetEpisodesUseCase(repository = get())
     }
 
+    factory {
+        GetFavoriteCharacterIdsUseCase(repository = get())
+    }
+
+    factory {
+        ToggleFavoriteCharacterUseCase(repository = get())
+    }
+
     viewModelOf(::CharactersViewModel)
 
     viewModel { parameters ->
