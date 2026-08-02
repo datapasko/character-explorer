@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -133,6 +134,9 @@ private fun CharacterImage(
         AsyncImage(
             model = character.imageUrl,
             contentDescription = null,
+            placeholder = painterResource(R.drawable.character_image_placeholder),
+            error = painterResource(R.drawable.character_image_placeholder),
+            fallback = painterResource(R.drawable.character_image_placeholder),
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
         )
