@@ -47,6 +47,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.tapasco.characters.R
 import com.tapasco.characters.domain.model.Character
+import com.tapasco.characters.domain.model.StatusCharacter
+import com.tapasco.characters.presentation.mapper.labelRes
 import com.tapasco.characters.ui.theme.CharactersMotion
 import com.tapasco.characters.ui.theme.FavoriteMotionTokens
 import com.tapasco.characters.ui.theme.InterdimensionalNeutral
@@ -225,13 +227,14 @@ private fun FavoriteButton(
 
 @Composable
 private fun CharacterStatusBadge(
-    status: String,
+    status: StatusCharacter,
     modifier: Modifier = Modifier,
 ) {
     val statusColor = characterStatusColor(status)
+    val statusLabel = stringResource(status.labelRes)
     val statusDescription = stringResource(
         R.string.character_status_description,
-        status,
+        statusLabel,
     )
 
     Surface(
@@ -243,7 +246,7 @@ private fun CharacterStatusBadge(
         border = BorderStroke(1.dp, statusColor.copy(alpha = 0.4f)),
     ) {
         Text(
-            text = status.uppercase(),
+            text = statusLabel.uppercase(),
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
             color = statusColor,
             style = MaterialTheme.typography.labelMedium,

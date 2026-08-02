@@ -252,10 +252,10 @@ private fun testCharacter(
 ) = Character(
     id = id,
     name = "Rick Sanchez",
-    status = "Alive",
+    status = StatusCharacter.ALIVE,
     species = "Human",
     type = "",
-    gender = "Male",
+    gender = GenderCharacter.MALE,
     origin = CharacterLocation(name = "Earth (C-137)", url = ""),
     location = CharacterLocation(name = "Citadel of Ricks", url = ""),
     imageUrl = "https://example.com/rick.png",

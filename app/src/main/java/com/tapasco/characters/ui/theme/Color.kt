@@ -1,6 +1,7 @@
 package com.tapasco.characters.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import com.tapasco.characters.domain.model.StatusCharacter
 
 val InterdimensionalGreen = Color(0xFF97CE4C)
 val InterdimensionalYellow = Color(0xFFF0E14A)
@@ -9,10 +10,10 @@ val InterdimensionalNeutral = Color(0xFF1A1A1E)
 
 val InterdimensionalRed = Color(0xFFE5484D)
 
-internal fun characterStatusColor(status: String): Color = when {
-    status.equals("alive", ignoreCase = true) -> InterdimensionalGreen
-    status.equals("dead", ignoreCase = true) -> InterdimensionalRed
-    else -> InterdimensionalYellow
+internal fun characterStatusColor(status: StatusCharacter): Color = when (status) {
+    StatusCharacter.ALIVE -> InterdimensionalGreen
+    StatusCharacter.DEAD -> InterdimensionalRed
+    StatusCharacter.UNKNOWN -> InterdimensionalYellow
 }
 
 internal val LightBackground = Color(0xFFF8F8F2)
