@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,7 +52,6 @@ import com.tapasco.characters.domain.model.Character
 import com.tapasco.characters.domain.model.Episode
 import com.tapasco.characters.presentation.mapper.labelRes
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.parameter.parametersOf
 
 @Composable
 fun CharacterDetailScreen(
@@ -59,15 +59,18 @@ fun CharacterDetailScreen(
     modifier: Modifier = Modifier,
     viewModel: CharacterDetailViewModel = koinViewModel(
         key = "character-detail-$characterId",
-        parameters = { parametersOf(characterId) },
     ),
 ) {
     val uiState by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+    LaunchedEffect(characterId, viewModel) {
+        viewModel.loadCharacter(characterId)
+    }
+
     CharacterDetailContent(
         uiState = uiState,
-        onRetry = viewModel::retry,
+        onRetry = { viewModel.retry(characterId) },
         onRetryEpisodes = viewModel::retryEpisodes,
         onShareCharacter = { character ->
             shareCharacter(
