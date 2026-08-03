@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class CharacterDetailViewModel(
-    private val characterId: Int,
     private val getCharacterUseCase: GetCharacterUseCase,
     private val refreshCharacterUseCase: RefreshCharacterUseCase,
     private val getEpisodesUseCase: GetEpisodesUseCase,
@@ -24,20 +23,23 @@ class CharacterDetailViewModel(
 
     private var loadedEpisodeUrls: List<String>? = null
 
-    init {
-        observeCharacter()
-        refreshCharacter()
+    fun loadCharacter(characterId: Int) {
+        observeCharacter(characterId)
+        refreshCharacter(characterId)
     }
 
-    fun retry() {
-        refreshCharacter(forceRefresh = true)
+    fun retry(characterId: Int) {
+        refreshCharacter(
+            characterId = characterId,
+            forceRefresh = true,
+        )
     }
 
     fun retryEpisodes() {
         _state.value.character?.let(::loadEpisodes)
     }
 
-    private fun observeCharacter() {
+    private fun observeCharacter(characterId: Int) {
         viewModelScope.launch {
             getCharacterUseCase(characterId).collectLatest { character ->
                 if (character == null) return@collectLatest
@@ -58,7 +60,10 @@ class CharacterDetailViewModel(
         }
     }
 
-    private fun refreshCharacter(forceRefresh: Boolean = false) {
+    private fun refreshCharacter(
+        characterId: Int,
+        forceRefresh: Boolean = false,
+    ) {
         viewModelScope.launch {
             _state.update { currentState ->
                 currentState.copy(

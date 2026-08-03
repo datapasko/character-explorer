@@ -14,14 +14,22 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
+import androidx.paging.PagingData
 import com.tapasco.characters.R
 import com.tapasco.characters.domain.model.Character
 import com.tapasco.characters.domain.model.CharacterLocation
 import com.tapasco.characters.domain.model.Episode
 import com.tapasco.characters.domain.model.GenderCharacter
 import com.tapasco.characters.domain.model.StatusCharacter
+import com.tapasco.characters.domain.repository.CharactersRepository
+import com.tapasco.characters.domain.repository.EpisodesRepository
+import com.tapasco.characters.domain.usecase.GetCharacterUseCase
+import com.tapasco.characters.domain.usecase.GetEpisodesUseCase
+import com.tapasco.characters.domain.usecase.RefreshCharacterUseCase
 import com.tapasco.characters.presentation.mapper.labelRes
 import com.tapasco.characters.ui.theme.CharactersTheme
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -30,6 +38,31 @@ class CharacterDetailScreenTest {
 
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+    @Test
+    fun screenEntry_loadsCharacterUsingRouteId() {
+        val characterId = 137
+        val repository = FakeScreenCharactersRepository()
+        val viewModel = CharacterDetailViewModel(
+            getCharacterUseCase = GetCharacterUseCase(repository),
+            refreshCharacterUseCase = RefreshCharacterUseCase(repository),
+            getEpisodesUseCase = GetEpisodesUseCase(FakeScreenEpisodesRepository()),
+        )
+
+        composeRule.setContent {
+            CharactersTheme {
+                CharacterDetailScreen(
+                    characterId = characterId,
+                    viewModel = viewModel,
+                )
+            }
+        }
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            repository.observedIds == listOf(characterId) &&
+                repository.refreshedIds == listOf(characterId)
+        }
+    }
 
     @Test
     fun loadingState_showsAccessibleSkeletonOnly() {
@@ -305,5 +338,32 @@ private fun testEpisode() = Episode(
     airDate = "December 2, 2013",
     code = "S01E01",
 )
+
+private class FakeScreenCharactersRepository : CharactersRepository {
+    val observedIds = mutableListOf<Int>()
+    val refreshedIds = mutableListOf<Int>()
+
+    override fun getCharacters(
+        name: String?,
+        status: String?,
+    ): Flow<PagingData<Character>> = flowOf(PagingData.empty())
+
+    override fun observeCharacter(characterId: Int): Flow<Character?> {
+        observedIds += characterId
+        return flowOf(null)
+    }
+
+    override suspend fun refreshCharacter(
+        characterId: Int,
+        forceRefresh: Boolean,
+    ): Result<Unit> {
+        refreshedIds += characterId
+        return Result.success(Unit)
+    }
+}
+
+private class FakeScreenEpisodesRepository : EpisodesRepository {
+    override suspend fun getEpisodes(episodeIds: List<Int>): Result<List<Episode>> = Result.success(emptyList())
+}
 
 private const val TEST_CHARACTER_NAME = "Rick Sanchez"

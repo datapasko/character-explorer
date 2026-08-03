@@ -29,7 +29,7 @@ class CharacterDetailViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     @Test
-    fun init_loadsCharacterById() = runTest {
+    fun loadCharacter_loadsCharacterById() = runTest {
         val character = testCharacter(id = 137)
         val episode = testEpisode()
         val repository = FakeCharactersRepository(
@@ -40,14 +40,17 @@ class CharacterDetailViewModelTest {
         )
 
         val viewModel = createViewModel(
-            characterId = character.id,
             repository = repository,
             episodesRepository = episodesRepository,
         )
         assertEquals(CharacterDetailState(), viewModel.state.value)
+        assertEquals(emptyList<Int>(), repository.observedIds)
+        assertEquals(emptyList<Int>(), repository.requestedIds)
 
+        viewModel.loadCharacter(character.id)
         runCurrent()
 
+        assertEquals(listOf(137), repository.observedIds)
         assertEquals(listOf(137), repository.requestedIds)
         assertEquals(
             CharacterDetailState(
@@ -69,6 +72,7 @@ class CharacterDetailViewModelTest {
         )
         val viewModel = createViewModel(repository = repository)
 
+        viewModel.loadCharacter(1)
         runCurrent()
 
         assertEquals(
@@ -92,6 +96,7 @@ class CharacterDetailViewModelTest {
             ),
         )
         val viewModel = createViewModel(repository = repository)
+        viewModel.loadCharacter(character.id)
         runCurrent()
         assertEquals(
             CharacterDetailState(
@@ -101,7 +106,7 @@ class CharacterDetailViewModelTest {
             viewModel.state.value,
         )
 
-        viewModel.retry()
+        viewModel.retry(character.id)
         runCurrent()
 
         assertEquals(listOf(character.id, character.id), repository.requestedIds)
@@ -132,6 +137,7 @@ class CharacterDetailViewModelTest {
             episodesRepository = episodesRepository,
         )
 
+        viewModel.loadCharacter(character.id)
         runCurrent()
 
         assertEquals(
@@ -163,6 +169,7 @@ class CharacterDetailViewModelTest {
             repository = repository,
             episodesRepository = episodesRepository,
         )
+        viewModel.loadCharacter(character.id)
         runCurrent()
 
         viewModel.retryEpisodes()
@@ -196,6 +203,7 @@ class CharacterDetailViewModelTest {
             episodesRepository = episodesRepository,
         )
 
+        viewModel.loadCharacter(character.id)
         runCurrent()
 
         assertEquals(emptyList<List<Int>>(), episodesRepository.requestedIds)
@@ -219,6 +227,7 @@ class CharacterDetailViewModelTest {
         )
         val viewModel = createViewModel(repository = repository)
 
+        viewModel.loadCharacter(character.id)
         runCurrent()
 
         assertEquals(
@@ -233,7 +242,6 @@ class CharacterDetailViewModelTest {
     }
 
     private fun createViewModel(
-        characterId: Int = 1,
         repository: FakeCharactersRepository,
         episodesRepository: FakeEpisodesRepository = FakeEpisodesRepository(
             responses = ArrayDeque(
@@ -241,7 +249,6 @@ class CharacterDetailViewModelTest {
             ),
         ),
     ) = CharacterDetailViewModel(
-        characterId = characterId,
         getCharacterUseCase = GetCharacterUseCase(repository),
         refreshCharacterUseCase = RefreshCharacterUseCase(repository),
         getEpisodesUseCase = GetEpisodesUseCase(episodesRepository),
@@ -252,6 +259,7 @@ private class FakeCharactersRepository(
     private val responses: ArrayDeque<Result<Character>>,
     initialCharacter: Character? = null,
 ) : CharactersRepository {
+    val observedIds = mutableListOf<Int>()
     val requestedIds = mutableListOf<Int>()
     val forceRefreshRequests = mutableListOf<Boolean>()
     private val character = MutableStateFlow(initialCharacter)
@@ -261,7 +269,10 @@ private class FakeCharactersRepository(
         status: String?,
     ): Flow<PagingData<Character>> = flowOf(PagingData.empty())
 
-    override fun observeCharacter(characterId: Int): Flow<Character?> = character
+    override fun observeCharacter(characterId: Int): Flow<Character?> {
+        observedIds += characterId
+        return character
+    }
 
     override suspend fun refreshCharacter(
         characterId: Int,
