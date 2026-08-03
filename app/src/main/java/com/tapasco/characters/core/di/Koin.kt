@@ -7,10 +7,11 @@ fun initKoin(configuration: KoinAppDeclaration? = null) {
     startKoin {
         configuration?.invoke(this)
         modules(
-            appModule,
             dispatchersModule,
             dataModule,
+            domainModule,
             networkModule,
+            presentationModule,
         )
     }
 }
